@@ -1,4 +1,4 @@
-# with removing communal fixation between two pages #redoing the code from DSS was not done yet when switched two V2
+# with removing communal fixation between two pages #This file would be a backup for the code even though we decided not to remove communal fixations and change the code
 # rm(list = ls(all.names = TRUE))
 # Adding other pages of data to the selection page
 
