@@ -3,12 +3,25 @@
 # rm(list = ls(all.names = TRUE)) removing all variables
 
 
-setwd("~/Desktop/MSTBI/TobiiExtractedData/output")
+setwd("~/Desktop/MSTBI/TobiiExtractedData/outputRemovingAOIs")
 library(stringr)
 library(dplyr)
 
 #list files
 files_full <- list.files(getwd())
+
+# relabeling part of fixations without x,y as Fi
+# for (i in 1:length(files_full)) {
+# # for (i in 1:2) {
+#         print(i)
+#         print(Sys.time())
+#         z <- read.csv(files_full[i])
+#         levels(z$GazeEventType) <- c(levels(z$GazeEventType), "Fi")
+#         z[which(is.na(z[,"GazePointX..ADCSpx."] & is.na(z[,"GazePointY..ADCSpx."])) & z[,"GazeEventType"]=="Fixation"),"GazeEventType"] <- "Fi"
+#         write.csv(z, file = paste( c(files_full[i]),"_Fi.csv", sep = "") )
+#         # browser()
+#         print(Sys.time())
+# }
 
 #reading csv files
 a <- lapply(files_full, read.csv)
@@ -69,40 +82,46 @@ d <- lapply(d, function(x) {
         cbind(x, AvePupil)
 })
 Sys.time()
-# dcopy <- d
-# d <- dcopy
 
-# levels(d[[1]][,"Page"]) <- c(-1:21)
+dcopy <- d
+d <- dcopy
 
+Sys.time()
 for (i in 1:length(d)) {
-# for (i in 1:2) {
+# for (i in 1:9) {
+        d[[i]][,"Page"] <- NA
+        # browser()
+        # levels(d[[i]][,"Page"]) <- c(-1:21)     # I never understood why I did not need this line for Test1 participants but Test2. Without this line, for Test2 participants, we only get page=-1 but the page for others would be NA.
         d[[i]]$MediaName <- as.character(d[[i]]$MediaName) #converting factor to character to enable selecting one element
         for (j in 1:nrow(d[[i]])) {
         # for (j in 1:5000) {
-                if ((d[[i]][j,"MediaName"])=="") {d[[i]][j,"Page"] <- as.character(-1)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/") {d[[i]][j,"Page"] <- as.character(0)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/1") {d[[i]][j,"Page"] <- as.character(1)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/2") {d[[i]][j,"Page"] <- as.character(2)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/3") {d[[i]][j,"Page"] <- as.character(3)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/4") {d[[i]][j,"Page"] <- as.character(4)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/5") {d[[i]][j,"Page"] <- as.character(5)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/6") {d[[i]][j,"Page"] <- as.character(6)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/7") {d[[i]][j,"Page"] <- as.character(7)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/8") {d[[i]][j,"Page"] <- as.character(8)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/9") {d[[i]][j,"Page"] <- as.character(9)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/10") {d[[i]][j,"Page"] <- as.character(10)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/11") {d[[i]][j,"Page"] <- as.character(11)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/12") {d[[i]][j,"Page"] <- as.character(12)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/13") {d[[i]][j,"Page"] <- as.character(13)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/14") {d[[i]][j,"Page"] <- as.character(14)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/15") {d[[i]][j,"Page"] <- as.character(15)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/16") {d[[i]][j,"Page"] <- as.character(16)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/17") {d[[i]][j,"Page"] <- as.character(17)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/18") {d[[i]][j,"Page"] <- as.character(18)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/report") {d[[i]][j,"Page"] <- as.character(19)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/summary") {d[[i]][j,"Page"] <- as.character(20)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/sus") {d[[i]][j,"Page"] <- as.character(21)
+                if ((d[[i]][j,"MediaName"])=="") {d[[i]][j,"Page"] <- as.character(-1) 
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/") {d[[i]][j,"Page"] <- as.character(0)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/1" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/1") {d[[i]][j,"Page"] <- as.character(1)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/2" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/2") {d[[i]][j,"Page"] <- as.character(2)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/3" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/3") {d[[i]][j,"Page"] <- as.character(3)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/4" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/4") {d[[i]][j,"Page"] <- as.character(4)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/5" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/5") {d[[i]][j,"Page"] <- as.character(5)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/6" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/6") {d[[i]][j,"Page"] <- as.character(6)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/7" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/7") {d[[i]][j,"Page"] <- as.character(7)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/8" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/8") {d[[i]][j,"Page"] <- as.character(8)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/9" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/9") {d[[i]][j,"Page"] <- as.character(9)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/10" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/10") {d[[i]][j,"Page"] <- as.character(10)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/11" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/11") {d[[i]][j,"Page"] <- as.character(11)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/12" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/12") {d[[i]][j,"Page"] <- as.character(12)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/13" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/13") {d[[i]][j,"Page"] <- as.character(13)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/14" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/14") {d[[i]][j,"Page"] <- as.character(14)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/15" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/15") {d[[i]][j,"Page"] <- as.character(15)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/16" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/16") {d[[i]][j,"Page"] <- as.character(16)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/17" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/17") {d[[i]][j,"Page"] <- as.character(17)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/18" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/18") {d[[i]][j,"Page"] <- as.character(18)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/report" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/report") {d[[i]][j,"Page"] <- as.character(19)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/summary" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/summary") {d[[i]][j,"Page"] <- as.character(20)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/sus" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/sus") {d[[i]][j,"Page"] <- as.character(21)
                 }
+                # if (j==500) {
+                #         browser()
+                # }
                 if (j>1) {
                         d[[i]][j,"PD"] <- ((d[[i]][j,"AvePupil"])-(d[[i]][j-1,"AvePupil"]))
                         d[[i]][j,"PD%"] <- round(((d[[i]][j,"PD"])/(d[[i]][j-1,"AvePupil"])*100), digits=3)
@@ -119,8 +138,8 @@ for (i in 1:length(d)) {
 names(d) <- namesA
 Sys.time()
 
-# dcopy1 <- d # after running for first 2 participants with Pages
-# d <- dcopy1
+# dcopy1 <- d
+d <- dcopy1
 
 # g: matrix with separation at the level of fixations for each participant
 # g: matrix with computed pupil parameters (summary of each fixation)
@@ -135,11 +154,12 @@ for (i in 1:length(g)) {
                              )
 }
 
-for (i in 1:length(g)) { #length(g) is equal to number of participants
-# for (i in 1:2) { #length(g) is equal to number of participants
+# for (i in 1:length(g)) { #length(g) is equal to number of participants
+for (i in 11:11) { #length(g) is equal to number of participants
         s <- 1          #counter for rows
         p <- split(d[[i]], d[[i]]$Page)
         q <- as.numeric(levels(d[[i]]$Page))  #I could not select an element of a vector, so I converted it
+        # browser()
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
                         h <- as.character(unique(p[[k]]$IVTfac))  #p[[k]]$IVTfac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
@@ -165,6 +185,9 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
                                                 # g[[i]][s,"Fix_Velocity"] <- mean(y$"Fix_Velocity", na.rm = TRUE)
                                                 g[[i]][s,"Fix_Dur"] <- y[1,"GazeEventDuration"]
                                                 g[[i]][s,"Fix_C_Dur"] <- z
+                                                if (h[j]==zz) {
+                                                        browser()
+                                                }
                                         }
                                         g[[i]][s,"Page"] <- q[k]
                                         s <- s+1
@@ -176,7 +199,8 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
 names(g) <- namesA
 Sys.time()
 
-###########################
+gcopy <- g
+g <- gcopy
 
 # gs: g for saccade
 # gs: matrix with separation at the level of saccades for each participant
@@ -198,7 +222,7 @@ for (i in 1:length(gs)) { #length(gs) is equal to number of participants
         ps <- split(d[[i]], d[[i]]$Page)
         qs <- as.numeric(levels(d[[i]]$Page))  #I could not select an element of a vector, so I converted it
         for (k in 1:length(qs)) {
-                if (q[k]>=0) {
+                if (qs[k]>=0) {
                         hs <- as.character(unique(ps[[k]]$IVTSacFac))  #ps[[k]]$IVTSacFac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
                         for (j in 1:length(hs)) {        #number of fixations for each participant      
                                 ys <- ps[[k]][which(ps[[k]]$IVTSacFac==hs[j]),]
@@ -233,6 +257,9 @@ for (i in 1:length(gs)) { #length(gs) is equal to number of participants
 }
 names(gs) <- namesA
 Sys.time()
+
+gscopy <- gs
+gs <- gscopy
 
 # FixPage and SacPage: matrix of means of columns (means of data of all fixations of each participant for each page)
 # summary of each paricipant
@@ -364,6 +391,9 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
         AllTotal[i,"RecDuration"] <- sum(AllPage[which((AllPage$Participant==AllTotal$Participant[i])),"RecDuration"])
 }
 Sys.time()
+
+write.csv(AllPage, file = "AllPage.csv")
+write.csv(AllTotal, file = "AllTotal.csv")
 
 # finding a text
 # strsplit(rownames(m2),"_")
