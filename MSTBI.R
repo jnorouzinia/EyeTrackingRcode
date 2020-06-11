@@ -3,7 +3,7 @@
 # rm(list = ls(all.names = TRUE)) removing all variables
 
 
-setwd("~/Desktop/MSTBI/TobiiExtractedData/outputRemovingAOIs")
+setwd("~/Desktop/MSTBI/TobiiExtractedData/outputWRemovedAOIs")
 library(stringr)
 library(dplyr)
 options(scipen = 999)
@@ -349,32 +349,6 @@ rownames(AllPage) <- c()
 # Removing second column of page number
 AllPage <- subset(AllPage, select = -c(Page.1) )
 
-AllPage2 <- AllPage
-for (i in 1:nrow(AllPage2)) {
-        if (AllPage2$Page[i]==19) {
-                AllPage2$Page[i] <- "report"        
-        } else if (AllPage2$Page[i]==20) {
-                AllPage2$Page[i] <- "summary" 
-        } else if (AllPage2$Page[i]==21) {
-                AllPage2$Page[i] <- "sus" 
-        }
-}
-# library(data.table)
-# AllPage2 <- AllPage2[order(AllPage2$Test,AllPage2$Rec),]
-# AllPage2 <- AllPage2[order(AllPage2$Rec=c(1:18,"sus","report","summary")),]
-# z <- c(1:18,"sus","report","summary")
-# AllPage2 <- AllPage2 %>% arrange(factor(Rec, levels = z))
-# AllPage2 <- arrange(AllPage2,(Rec))
-# AllPage2[with(AllPage2, order(AllPage2$Test, "Rec")),]
-# AllPage2[order(AllPage2$Test, my_data2$group2), ] 
-# data_ordered <- data                                 # Replicate example data
-# setorder(AllPage2, z)                       # Order data with data.table
-# AllPage2 
-# 
-# AllPage2$Rec <- ordered(AllPage2$Rec, z)
-# z <- AllPage2[with(AllPage2, order(Rec, Test)),]
-
-
 
 AllPageCopy <- AllPage
 AllPage <- AllPageCopy
@@ -459,41 +433,70 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
         # RecCntDuration is a more accurate variables since it does not go wrong with going back and forth between pages
         AllTotal[i,"RecCntDuration"] <- sum(AllPage[which((AllPage$Participant==AllTotal$Participant[i])),"PageCntDuration"])
         AllTotal[i,"Uncls_CntDuration"] <- sum(AllPage[which((AllPage$Participant==AllTotal$Participant[i])),"Uncls_Dur_Cnt_Sum"])
-        # browser()
 }
 Sys.time()
+
+
+# for (i in 1:nrow(AllPage)) {
+#         if (AllPage$Page[i]==19) {
+#                 AllPage$Page[i] <- "report"        
+#         } else if (AllPage$Page[i]==20) {
+#                 AllPage$Page[i] <- "summary" 
+#         } else if (AllPage$Page[i]==21) {
+#                 AllPage$Page[i] <- "sus" 
+#         }
+# }
+# library(data.table)
+# AllPage2 <- AllPage2[order(AllPage2$Test,AllPage2$Rec),]
+# AllPage2 <- AllPage2[order(AllPage2$Rec=c(1:18,"sus","report","summary")),]
+# z <- c(1:18,"sus","report","summary")
+# AllPage2 <- AllPage2 %>% arrange(factor(Rec, levels = z))
+# AllPage2 <- arrange(AllPage2,(Rec))
+# AllPage2[with(AllPage2, order(AllPage2$Test, "Rec")),]
+# AllPage2[order(AllPage2$Test, my_data2$group2), ] 
+# data_ordered <- data                                 # Replicate example data
+# setorder(AllPage2, z)                       # Order data with data.table
+# AllPage2 
+# 
+# AllPage2$Rec <- ordered(AllPage2$Rec, z)
+# z <- AllPage2[with(AllPage2, order(Rec, Test)),]
+
 
 write.csv(AllPage, file = "AllPage.csv")
 write.csv(AllTotal, file = "AllTotal.csv")
 
 # the number of pages should be converted to a variable not constant
-ttest <- matrix(ncol=length(colnames(AllPage)[4:35]))
-colnames(ttest) <- colnames(AllPage)[4:35]
+# ttest <- matrix(ncol=length(colnames(AllPage)[4:35]))
+# colnames(ttest) <- colnames(AllPage)[4:35]
 
-ttest <- AllPage
-ttest <- ttest[-c(2:nrow(ttest)),-c(1:3)]
-ttest[1,] <- NA
-# for (i in 4:35) {
-        # colnames(ttest) <- colnames(AllPage)
-# }
-
+# Running t-test at the page level
+ttestP <- AllPage
+ttestP <- ttestP[-c(2:nrow(ttestP)),-c(1:3)]
+ttestP[1,] <- NA
 s <- 1
-for (i in 0:21) {
-        for (j in 2:ncol(ttest)) {
-                z <- t.test(AllPage[which(AllPage$Test=="Test1" & AllPage$Page==i),colnames(ttest)[j]],AllPage[which(AllPage$Test=="Test2" & AllPage$Page==i),colnames(ttest)[j]])
-                ttest[s,"Page"] <- i
-                ttest[s,colnames(ttest)[j]] <- z$p.value
+for (i in 1:length(unique(AllPage$Page))) {
+        for (j in 2:ncol(ttestP)) {
+                z <- t.test(AllPage[which(AllPage$Test=="Test1" & AllPage$Page==i-1),colnames(ttestP)[j]],AllPage[which(AllPage$Test=="Test2" & AllPage$Page==i-1),colnames(ttestP)[j]])
+                ttestP[s,"Page"] <- AllPage$Page[i]
+                ttestP[s,colnames(ttestP)[j]] <- z$p.value
         }
         s <- s+1
 }
-write.csv(ttest, file = "ttest.csv")
+write.csv(ttestP, file = "ttestP.csv")
 
-# for (i in 0:21) {
-#         z <- t.test(AllPage[which(AllPage$Test=="Test1" & AllPage$Page==i),"F_Dens_M"],AllPage[which(AllPage$Test=="Test2" & AllPage$Page==i),"F_Dens_M"], alternative = "two.sided", mu=0, paired = FALSE, var.equal = FALSE)
-#         browser()
-# }
-
-# t.test(AllPage[which(AllPage$Test=="Test1"),"F_Dens_M"], AllPage[which(AllPage$Test=="Test2"),"F_Dens_M"])
+# Running t-test at the participant level
+ttestT <- AllTotal
+ttestT <- ttestT[-c(2:nrow(ttestT)),-c(1:3)]
+ttestT[1,] <- NA
+s <- 1
+for (i in 1:1) {
+        for (j in 1:ncol(ttestT)) {
+                z <- t.test(AllTotal[which(AllTotal$Test=="Test1"),colnames(ttestT)[j]],AllTotal[which(AllTotal$Test=="Test2"),colnames(ttestT)[j]])
+                ttestT[s,colnames(ttestT)[j]] <- z$p.value
+        }
+        s <- s+1
+}
+write.csv(ttestT, file = "ttestT.csv")
 
 # finding a text
 # strsplit(rownames(m2),"_")
