@@ -461,7 +461,6 @@ Sys.time()
 # AllPage2$Rec <- ordered(AllPage2$Rec, z)
 # z <- AllPage2[with(AllPage2, order(Rec, Test)),]
 
-
 write.csv(AllPage, file = "AllPage.csv")
 write.csv(AllTotal, file = "AllTotal.csv")
 
