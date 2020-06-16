@@ -295,6 +295,7 @@ library(dplyr)
 gPage <- list()
 gPage <- lapply(g, function(x) summarise(x %>% group_by(Page),
                                         F_Dens_M= mean(Fix_Dens, na.rm = TRUE),
+                                        F_Dens_SD= sd(Fix_Dens, na.rm = TRUE),
                                         # F_Dens_C_Dur= mean(Fix_Dens_C_Dur, na.rm = TRUE),
                                         F_P_M= mean(Fix_P_Mean, na.rm = TRUE),
                                         F_P_SD= sd(Fix_P_Mean, na.rm = TRUE), 
@@ -344,7 +345,7 @@ AllPage <- cbind(FixPage, SacPage)
 AllPage[,"Participant"] <- substr(row.names(AllPage),start=1, stop=12)
 AllPage[,"Test"] <- substr(AllPage$Participant,start=1, stop=5)
 AllPage[,"Rec"] <- substr(AllPage$Participant,start=11, stop=12)
-AllPage <- AllPage[,c(29,30,31,1:28)]
+AllPage <- AllPage[,c(30,31,32,1:29)]
 rownames(AllPage) <- c()
 # Removing second column of page number
 AllPage <- subset(AllPage, select = -c(Page.1) )
@@ -360,8 +361,8 @@ for (i in 1:length(d)) { #length(d) is equal to number of participants
         q <- as.numeric(levels(d[[i]]$Page))  #I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
-                        AllPage[which(p[[k]]$Page[1] == AllPage$Page & str_detect(names(d[i]), AllPage$Participant) ),"NoFixation"] <- (p[[k]][max(which(p[[k]]["FixationIndex"]>0)),"FixationIndex"])-(p[[k]][min(which(p[[k]]["FixationIndex"]>0)),"FixationIndex"])
-                        AllPage[which(p[[k]]$Page[1] == AllPage$Page & str_detect(names(d[i]), AllPage$Participant) ),"NoSaccade"] <- (p[[k]][max(which(p[[k]]["SaccadeIndex"]>0)),"SaccadeIndex"])-(p[[k]][min(which(p[[k]]["SaccadeIndex"]>0)),"SaccadeIndex"])
+                        AllPage[which(p[[k]]$Page[1] == AllPage$Page & str_detect(names(d[i]), AllPage$Participant) ),"NoFixation"] <- length(unique(p[[k]][which(p[[k]]["FixationIndex"]>0),"FixationIndex"]))
+                        AllPage[which(p[[k]]$Page[1] == AllPage$Page & str_detect(names(d[i]), AllPage$Participant) ),"NoSaccade"] <- length(unique(p[[k]][which(p[[k]]["SaccadeIndex"]>0),"SaccadeIndex"]))
                         AllPage[which(p[[k]]$Page[1] == AllPage$Page & str_detect(names(d[i]), AllPage$Participant) ),"PageDuration"] <- (p[[k]][max(which(p[[k]]["RecordingTimestamp"]>0)),"RecordingTimestamp"])-(p[[k]][min(which(p[[k]]["RecordingTimestamp"]>0)),"RecordingTimestamp"])
                         # PageCntDuration is a better variable for duration since it does not go wrong like PageDuration, which is calculated based on timestamp, when go back and forth between pages
                         AllPage[which(p[[k]]$Page[1] == AllPage$Page & str_detect(names(d[i]), AllPage$Participant) ),"PageCntDuration"] <- nrow(p[[k]][which(!is.na(p[[k]]$EyeTrackerTimestamp)),])*3.333
@@ -377,6 +378,7 @@ for (i in 1:length(d)) { #length(d) is equal to number of participants
 gTotal <- list()
 gTotal <- lapply(g, function(x) summarise(x,
                                          F_Dens_M= mean(Fix_Dens, na.rm = TRUE),
+                                         F_Dens_SD= sd(Fix_Dens, na.rm = TRUE),
                                          # F_Dens_C_Dur= mean(Fix_Dens_C_Dur, na.rm = TRUE),
                                          F_P_M= mean(Fix_P_Mean, na.rm = TRUE),
                                          F_P_SD= sd(Fix_P_Mean, na.rm = TRUE), 
@@ -421,7 +423,7 @@ AllTotal <- cbind(FixTotal, SacTotal)
 AllTotal[,"Participant"] <- substr(row.names(AllTotal),start=1, stop=12)
 AllTotal[,"Test"] <- substr(AllTotal$Participant,start=1, stop=5)
 AllTotal[,"Rec"] <- substr(AllTotal$Participant,start=11, stop=12)
-AllTotal <- AllTotal[,c(27,28,29,1:26)]
+AllTotal <- AllTotal[,c(28,29,30,1:27)]
 rownames(AllTotal) <- c()
 
 # Adding NoFixation, NoSaccade, and RecDuration to each participant's data
