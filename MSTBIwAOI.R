@@ -56,17 +56,16 @@ for (i in 1:length(a)) {
                                                        "GazeEventType", "SaccadicAmplitude","RecordingDuration",
                                                        "SaccadeIndex","AbsoluteSaccadicDirection","EyeTrackerTimestamp")),which(str_detect(names(a[[i]]),"AOI")))
                          ]
-        
 }
 Sys.time()
 
-#replacing 0 with NAs in FixationIndex # quick function
+#replacing 0 with NAs in FixationIndex # quick function # FixationIndex & SaccadeIndex cannot be the same
+# FixIndex=SaccadeIndex=1 would be an error; FixIndex=1 & SaccadeIndex=0 is 
 for (i in 1:length(b)) {
         b[[i]]$FixationIndex <- ifelse (is.na(b[[i]]$FixationIndex), 0, b[[i]]$FixationIndex)
         b[[i]]$SaccadeIndex <- ifelse (is.na(b[[i]]$SaccadeIndex), 0, b[[i]]$SaccadeIndex)
         # b[[i]]$X0.1 <- ifelse (is.na(b[[i]]$X0.1), 0, b[[i]]$X0.1)
 }
-
 
 
 # using all points again including gaze points without GazePointX..ADCSpx. and GazePointY..ADCSpx. and probabaly pupil data
@@ -110,11 +109,12 @@ dcopy <- d
 d <- dcopy
 
 Sys.time()
-for (i in 1:length(d)) { # lenghty process
-# for (i in 1:1) {
+for (i in 1:length(d)) { # running for about 11 hours
+# for (i in 10:length(d)) {
         d[[i]][,"Page"] <- NA
         # browser()
         # levels(d[[i]][,"Page"]) <- c(-1:21)     # I never understood why I did not need this line for Test1 participants but Test2. Without this line, for Test2 participants, we only get page=-1 but the page for others would be NA.
+        # browser()
         d[[i]]$MediaName <- as.character(d[[i]]$MediaName) #converting factor to character to enable selecting one element
         for (j in 1:nrow(d[[i]])) {
         # for (j in 1:5000) {
@@ -166,30 +166,20 @@ e <- d
 fx <- data.frame(fxr=0,x1=0,x2=0,f1=0
                  # , Time=0
                  )
-
-# for (i in 1:length(e)) { #length(g) is equal to number of participants
-for (i in 1:1) { #length(g) is equal to number of participants
+Sys.time()
+for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
+# for (i in 1:1) { #length(g) is equal to number of participants
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  # I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
                         z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
-                        z1 <- z[which(sapply(y[,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
+                        z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
                         if (length(z1)>0) {
                                 for (m in 1:length(z1)) {
-                                # for (m in 1:1) {
                                         fx$fxr <- fx$x1 <- fx$x2 <- fx$f1 <- 0
-                                        # for (r in 1:nrow(p[[k]])){
-                                        for (r in 1:12000){
+                                        for (r in 1:nrow(p[[k]])){
                                                 fx$fxr <- r
-                                                # fx$Time <- p[[k]][r, "RecordingTimestamp"]
-                                                # if (r %%1000==0) {
-                                                # if (m == 2 & r > 62) {
-                                                #         browser()
-                                                # }
-                                                if (r > 2 & i==2) {
-                                                        browser()
-                                                }
                                                 if ((p[[k]][r, "FixationIndex"]== 0 & (p[[k]][r,z1[m]]) %in% 0)) {
                                                                 fx$x2 <- r
                                                 }
@@ -220,10 +210,95 @@ for (i in 1:1) { #length(g) is equal to number of participants
 
 ecopy <- e
 e <- ecopy
+Sys.time()
+
+###########
+# new function for relabling 
+e1 <- d
+fx <- data.frame(fxr=0,x1=0,x2=0,f1=0
+                 # , Time=0
+)
+Sys.time()
+for (i in 1:length(e1)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
+        # for (i in 1:1) { #length(g) is equal to number of participants
+        p <- split(e1[[i]], e1[[i]]$Page)
+        q <- as.numeric(levels(e1[[i]]$Page))  # I could not select an element of a vector, so I converted it
+        for (k in 1:length(q)) {
+                if (q[k]>=0) {
+                        z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
+                        z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
+                        if (length(z1)>0) {
+                                for (m in 1:length(z1)) { # go column by column of AOIs
+                                        fx$fxr <- fx$x1 <- fx$x2 <- fx$f1 <- 0
+                                        browser()
+                                        x <- unique(p[[k]]$FixationIndex)[unique(p[[k]]$FixationIndex)>0] # x: fixations
+                                        for  (r in 1:nrow(x)) {
+                                                xy <- p[[k]][which(p[[k]]$FixationIndex==x[r]),]
+                                                if (xy[2,z1[m]] %in% 1) {           # the first row of each fixation would have NA, so looked at the second row
+                                                
+                                                
+                                                        if (fx$f1 ==0) {
+                                                                fx$f1 <- xy[1,"FixationIndex"] 
+                                                                fx$x1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
+                                                        } else {
+                                                                fx$x2 <- xy[1,"RecordingTimestamp"]     #timestamp of first row of second consecutive fixation on the AOI
+                                                                
+                                                                e[[i]][which(e[[i]]$RecordingTimestamp > x1 & e[[i]]$RecordingTimestamp < x2),z1[m]] <- 2
+                                                                # xy[which(xy$RecordingTimestamp > 35548 & xy$RecordingTimestamp < 35575),15] <- 2
+                                                                
+                                                                fx$f1 <- xy[1,"FixationIndex"] 
+                                                                fx$x1 <- xy[nrow(xy),"RecordingTimestamp"] 
+                                                        }
+                                                } else if (xy[2,z1] %in% 0 & fx$f1>0) {
+                                                        fx$f1 <- 0
+                                                }
+                                        }
+                                        
+                                        
+                                        View(xy[which(xy$RecordingTimestamp > 35533 & xy$RecordingTimestamp < 35541),]) 
+                                        
+                                        
+                                        for (r in 1:nrow(p[[k]])){
+                                                fx$fxr <- r
+                                                if ((p[[k]][r, "FixationIndex"]== 0 & (p[[k]][r,z1[m]]) %in% 0)) {
+                                                        fx$x2 <- r
+                                                }
+                                                if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 0 & fx$f1 > 0) {
+                                                        fx$f1 <- 0
+                                                }
+                                                if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 1) {
+                                                        if (fx$f1 ==0) {
+                                                                fx$x1 <- r
+                                                                fx$f1 <- p[[k]][r, "FixationIndex"]
+                                                        } else if ((p[[k]][r, "FixationIndex"]-fx$f1)==0) {
+                                                                fx$x1 <- r
+                                                        } else if ((p[[k]][r, "FixationIndex"]-fx$f1)==1) {
+                                                                for (s in (fx$x1+1):(fx$x2)) {
+                                                                        e[[i]][which(e1[[i]]$Page==q[k]),][s,z1[m]] <- 2
+                                                                }
+                                                                p[[k]][(fx$x1+1):(fx$x2), z1[m]] <- 2
+                                                                fx$x1 <- r
+                                                                fx$f1 <- p[[k]][r, "FixationIndex"]
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+ecopy <- e
+e <- ecopy
+Sys.time()
+
+
+
+
+###########
 
 # g: matrix with separation at the level of fixations for each participant
 # g: matrix with computed pupil parameters (summary of each fixation)
-
 z <- which(str_detect(names(e[[1]]),"AOI")) # assuming that No of AOIs are the same among all participants.(needs to be checked)
 va <- c("Page", "IVT", "Fix_Dens", # variables we want to report
         "Fix_P_Mean" ,
@@ -234,7 +309,6 @@ temp <- matrix(rep(NA,length(va)+length(z)),nrow = 1)
 temp <- data.frame(temp)
 name <- c(va, names(e[[1]][,which(str_detect(names(e[[1]]),"AOI"))]))
 names(temp) <- name
-
 g <- list()
 length(g) <- length(e)
 for (i in 1:length(g)) {
@@ -253,12 +327,6 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
                                 y <- p[[k]][which(p[[k]]$IVTfac==h[j]),]
                                 if (h[j] > 0) {
                                         g[[i]][s,"Page"] <- q[k]
-                                        
-                                        # # AOI
-                                        # if (k >2 & j %% 100==0) {
-                                        if (j >121) {
-                                                browser()
-                                        }
                                         z <- which(str_detect(names(y),"AOI")) 
                                         z1 <- z[which(sapply(y[,z], function(x) sum(x,na.rm = TRUE))>0)]
                         
@@ -268,13 +336,7 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
                                                 } else {
                                                         g[[i]][s,length(va)+m] <- 0
                                                 }
-                                                # if (m==1 & k>2) {
-                                                #         browser()
-                                                # }
-                                                # browser()
-
                                         }
-                                        # browser()
                                         g[[i]][s,"IVT"] <- h[j]
                                         Area <- (max(y$"GazePointX..ADCSpx.", na.rm = TRUE) - min(y$"GazePointX..ADCSpx.", na.rm = TRUE))*(max(y$"GazePointY..ADCSpx.", na.rm = TRUE) - min(y$"GazePointY..ADCSpx.", na.rm = TRUE))
                                         if (Area==0 | Area==Inf | Area==-Inf) {          #if fixation includes only a point, it prevents generating NA and NAN.
@@ -286,7 +348,6 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
                                                         # , "Fix_Velocity"
                                                         )] <- NA
                                         } else {
-                                                # browser()
                                                 g[[i]][s,"Fix_Dens"] <- (nrow(y)/Area)
                                                 # g[[i]][s,"Fix_Dens"] <- ((y[1,"GazeEventDuration"])/Area)
                                                 # g[[i]][s,"Fix_Dens_C_Dur"] <- (z/Area)
@@ -298,7 +359,6 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
                                                 g[[i]][s,"Fix_C_Dur"] <- max(y$"RecordingTimestamp", na.rm = TRUE)-min(y$"RecordingTimestamp", na.rm = TRUE)
                                                 g[[i]][s,"Fix_Cnt_Dur"] <- nrow(y)*3.333
                                         }
-                                        # g[[i]][s,"Page"] <- q[k]
                                         s <- s+1
                                 }
                         }
@@ -322,53 +382,38 @@ vas <- c("Page", "IVTSac", "Sac_Dens",
         "Sac_Dur", "Sac_C_Dur", "Sac_Cnt_Dur"
         # , "Sac_Velocity"=NA
         )
-temps <- matrix(rep(NA,length(vas)+length(z)),nrow = 1) 
+temps <- matrix(rep(NA,length(vas)+length(z)),nrow = 1)
 temps <- data.frame(temps)
 namess <- c(vas, names(e[[1]][,which(str_detect(names(e[[1]]),"AOI"))]))
 names(temps) <- namess
-
 gs <- list()
 length(gs) <- length(e)
 for (i in 1:length(gs)) {
         gs[[i]] <- temps
 }
 
-
+Sys.time()
 for (i in 1:length(gs)) { #length(gs) is equal to number of participants
 # for (i in 1:2) { #length(gs) is equal to number of participants
         s <- 1          #counter for rows
         ps <- split(e[[i]], e[[i]]$Page)
         qs <- as.numeric(levels(e[[i]]$Page))  #I could not select an element of a vector, so I converted it
         for (k in 1:length(qs)) {
+                # browser()
                 if (qs[k]>=0) {
-                        
-                        
                         hs <- as.character(unique(ps[[k]]$IVTSacFac))  #ps[[k]]$IVTSacFac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
                         for (j in 1:length(hs)) {        #number of fixations for each participant      
                                 ys <- ps[[k]][which(ps[[k]]$IVTSacFac==hs[j]),]
                                 if (hs[j] > 0) {
                                         gs[[i]][s,"Page"] <- qs[k]
-                                        
-                                        # AOI
-                                        # if (j %% 100==0) {
-                                        if (j > 121) {
-                                                browser()
-                                        }
                                         z <- which(str_detect(names(ys),"AOI")) 
                                         z1 <- z[which(sapply(ys[,z], function(x) sum(x,na.rm = TRUE))>0)]
-                                        # browser()
-                                        
                                         for (m in 1:length(z)) {
                                                 if (z[m] %in% z1) {
                                                         gs[[i]][s,length(vas)+m] <- 1      
                                                 } else {
                                                         gs[[i]][s,length(vas)+m] <- 0
                                                 }
-                                                # if (m==1 & k>2) {
-                                                #         browser()
-                                                # }
-                                                # browser()
-                                                
                                         }
                                         # browser()
                                         gs[[i]][s,"IVTSac"] <- hs[j]
@@ -406,47 +451,113 @@ gscopy <- gs
 gs <- gscopy
 
 
-# FixAOI and SacAOI: matrix of means of columns (means of data of all fixations of each participant for each AOI on each page)
-# summary of each AOI
+# gAOI and gsAOI: matrix of means of columns (means of data of all fixations of each participant for each AOI on each page)
+# Summarize the fixation data for each AOI
 zz <- which(str_detect(names(g[[1]]),"AOI"))
-# zz1 <- z[which(sapply(ys[,zz], function(x) sum(x,na.rm = TRUE))>0)]
-tempAOI <- data.frame("Page"=NA, "AOI"=NA, "Fix_Dens"=NA, "Fix_P_Mean"=NA, 
-           "Fix_PD_Mean"=NA, "Fix_PD_Perc_Mean"=NA, "Fix_Dur"=NA,
-           "Fix_C_Dur"=NA, "Fix_Cnt_Dur"=NA)
+tempAOI <- data.frame("Page"=NA, "AOI"=NA, 
+                      "Fix_Dens_M"=NA, "Fix_Dens_SD"=NA,
+                      "Fix_P_M"=NA, "Fix_P_SD"=NA, 
+                      "Fix_PD_M"=NA, "Fix_PD_SD"=NA,
+                      "Fix_PD_Perc_M"=NA, "Fix_PD_Perc_SD"=NA,
+                      "Fix_Dur_M"=NA, "Fix_Dur_SD"=NA,
+                      "Fix_C_Dur_M"=NA, "Fix_C_Dur_SD"=NA,
+                      "Fix_Cnt_Dur_M"=NA, "Fix_Cnt_Dur_SD"=NA
+                      )
 tempAOI <- tempAOI[-1,]
 gAOI <- list()
 length(gAOI) <- length(g)
 for (i in 1:length(g)) {
         gAOI[[i]] <- tempAOI
 }
-
+Sys.time()
 
 ####
-# calculating SDs and adding columns for them + truncating AOI names
+# needed:  truncating AOI names
 ####
 for (i in 1:length(g)) {
         s <- 1
         for (j in 1:length(zz)) {
                 if (length(which(g[[i]][zz[j]]==1))>0) {
-                        y <- g[[i]][which(g[[i]][zz[j]]==1),1:length(va)]  
+                        y <- g[[i]][which(g[[i]][zz[j]]==1),1:length(va)]
+                        o <- 0
                         for (k in 3:length(y)) {
                                 # browser()
+                                
+                                # below two lines may move out of the for loop # even page and AOI assignment may move out of if loop
                                 gAOI[[i]][s,"Page"] <- y[1,"Page"]
                                 gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
-                                if (nrow(y)>0) {
-                                        gAOI[[i]][s,names(y)[k]] <- mean(y[,k],na.rm = TRUE)
-                                }
+                                gAOI[[i]][s,k+o] <- mean(y[,k],na.rm = TRUE)
+                                gAOI[[i]][s,k+o+1] <- sd(y[,k],na.rm = TRUE)
+                                o <- o+1
                         }
                 } else {
                         gAOI[[i]][s,"Page"] <- y[1,"Page"]
                         gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
-                        gAOI[[i]][s,names(y)[k]] <- NA
+                        o <- 0
+                        for (k in 3:length(y)) {
+                                gAOI[[i]][s,k+o] <- NA
+                                gAOI[[i]][s,k+o+1] <- NA
+                                o <- o+1
+                        }
                 }
                 s <- s+1
-                browser()
+                # browser()
         }
 }
 
+Sys.time()
+# Summarize the saccade data for each AOI
+zzs <- which(str_detect(names(gs[[1]]),"AOI"))
+tempsAOI <- data.frame("Page", "AOI"=NA,
+                       "Sac_Dens_M"=NA, "Sac_Dens_SD"=NA,
+                       "Sac_P_M"=NA, "Sac_P_SD"=NA,
+                       "Sac_PD_M"=NA, "Sac_PD_SD"=NA,
+                       "Sac_PD_Perc_M"=NA, "Sac_PD_Perc_SD"=NA,
+                       "Sac_Dur_M"=NA, "Sac_Dur_SD"=NA,
+                       "Sac_C_Dur_M"=NA, "Sac_C_Dur_SD"=NA,
+                       "Sac_Cnt_Dur_M"=NA, "Sac_Cnt_Dur_SD"=NA
+)
+tempsAOI <- tempsAOI[-1,]
+gsAOI <- list()
+length(gsAOI) <- length(gs)
+for (i in 1:length(gs)) {
+        gsAOI[[i]] <- tempsAOI
+}
+
+####
+# needed:  truncating AOI names
+####
+for (i in 1:length(gs)) {
+        s <- 1
+        for (j in 1:length(zzs)) {
+                if (length(which(gs[[i]][zzs[j]]==1))>0) {
+                        y <- gs[[i]][which(gs[[i]][zzs[j]]==1),1:length(vas)]
+                        o <- 0
+                        for (k in 3:length(y)) {
+                                # browser()
+                                gsAOI[[i]][s,"Page"] <- y[1,"Page"]
+                                gsAOI[[i]][s,"AOI"] <- names(gs[[i]])[zzs[j]]
+                                gsAOI[[i]][s,k+o] <- mean(y[,k],na.rm = TRUE)
+                                gsAOI[[i]][s,k+o+1] <- sd(y[,k],na.rm = TRUE)
+                                o <- o+1
+                        }
+                } else {
+                        gsAOI[[i]][s,"Page"] <- y[1,"Page"]
+                        gsAOI[[i]][s,"AOI"] <- names(gs[[i]])[zzs[j]]
+                        o <- 0
+                        for (k in 3:length(y)) {
+                                gsAOI[[i]][s,k+o] <- NA
+                                gsAOI[[i]][s,k+o+1] <- NA
+                                o <- o+1
+                        }
+                }
+                s <- s+1
+                # browser()
+        }
+}
+
+Sys.time()
+#######
 library(dplyr)
 # FixPage and SacPage: matrix of means of columns (means of data of all fixations of each participant for each page)
 # summary of each paricipant
