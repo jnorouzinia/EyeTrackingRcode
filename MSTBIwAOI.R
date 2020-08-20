@@ -95,7 +95,7 @@ for (i in 1:length(b)) {
 # without removing gaze points which miss GazeX, GazeY and probably pupil data #these points mostly includes unclassified, fixation at the length of 1 gaze happened in the time start/end an URL, 
 Sys.time()
 c <- b
-for (i in 1: length(c)) { # running for about 6 hours # last time 3:30 hours !!!
+for (i in 1: length(c)) { # running for about 6 hours # last time 3:30 hours !!! (at least 1 less participant)
 # for (i in 1:1) {
         for (j in 1:nrow(c[[i]]))
         if (is.na(c[[i]][j,"PupilLeft"]) & is.na(c[[i]][j,"PupilRight"])) {c[[i]][j,"AvePupil"] <- NA
@@ -113,7 +113,7 @@ for (i in 1:length(d)) { # running for about 11 hours
 # for (i in 10:length(d)) {
         d[[i]][,"Page"] <- NA
         # browser()
-        # levels(d[[i]][,"Page"]) <- c(-1:21)     # I never understood why I did not need this line for Test1 participants but Test2. Without this line, for Test2 participants, we only get page=-1 but the page for others would be NA.
+        # levels(d[[i]][,"Page"]) <- c(-1:21)     # when reviewing the code, I never understood why I did not need this line for Test1 participants but Test2. Without this line, for Test2 participants, we only get page=-1 but the page for others would be NA.
         # browser()
         d[[i]]$MediaName <- as.character(d[[i]]$MediaName) #converting factor to character to enable selecting one element
         for (j in 1:nrow(d[[i]])) {
@@ -162,13 +162,62 @@ Sys.time()
 dcopy1 <- d
 d <- dcopy1
 
+# e <- d
+# fx <- data.frame(fxr=0,t1=0,t2=0,FixInd=0
+#                  # , Time=0
+#                  )
+# Sys.time()
+# for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
+# # for (i in 1:1) { #length(g) is equal to number of participants
+#         p <- split(e[[i]], e[[i]]$Page)
+#         q <- as.numeric(levels(e[[i]]$Page))  # I could not select an element of a vector, so I converted it
+#         for (k in 1:length(q)) {
+#                 if (q[k]>=0) {
+#                         z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
+#                         z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
+#                         if (length(z1)>0) {
+#                                 for (m in 1:length(z1)) {
+#                                         fx$fxr <- fx$t1 <- fx$t2 <- fx$FixInd <- 0
+#                                         for (r in 1:nrow(p[[k]])){
+#                                                 fx$fxr <- r
+#                                                 if ((p[[k]][r, "FixationIndex"]== 0 & (p[[k]][r,z1[m]]) %in% 0)) {
+#                                                                 fx$t2 <- r
+#                                                 }
+#                                                 if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 0 & fx$FixInd > 0) {
+#                                                                 fx$FixInd <- 0
+#                                                 }
+#                                                 if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 1) {
+#                                                         if (fx$FixInd ==0) {
+#                                                                 fx$t1 <- r
+#                                                                 fx$FixInd <- p[[k]][r, "FixationIndex"]
+#                                                         } else if ((p[[k]][r, "FixationIndex"]-fx$FixInd)==0) {
+#                                                                 fx$t1 <- r
+#                                                         } else if ((p[[k]][r, "FixationIndex"]-fx$FixInd)==1) {
+#                                                                 for (s in (fx$t1+1):(fx$t2)) {
+#                                                                         e[[i]][which(e[[i]]$Page==q[k]),][s,z1[m]] <- 2
+#                                                                 }
+#                                                                 p[[k]][(fx$t1+1):(fx$t2), z1[m]] <- 2
+#                                                                 fx$t1 <- r
+#                                                                 fx$FixInd <- p[[k]][r, "FixationIndex"]
+#                                                         }
+#                                                 }
+#                                         }
+#                                 }
+#                         }
+#                 }
+#         }
+# }
+# ecopy <- e
+# e <- ecopy
+# Sys.time()
+
+# relabling non-fixation gazes between each two consecutive fixation on the AOI as gazes belong to AOI (2 on the AOI column for these gazes)
 e <- d
-fx <- data.frame(fxr=0,x1=0,x2=0,f1=0
-                 # , Time=0
-                 )
+fx <- data.frame(t1=0,t2=0,FixInd=0)
 Sys.time()
+
 for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
-# for (i in 1:1) { #length(g) is equal to number of participants
+        # for (i in 1:1) { #length(g) is equal to number of participants
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  # I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
@@ -176,110 +225,24 @@ for (i in 1:length(e)) { #length(g) is equal to number of participants # terribl
                         z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
                         z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
                         if (length(z1)>0) {
-                                for (m in 1:length(z1)) {
-                                        fx$fxr <- fx$x1 <- fx$x2 <- fx$f1 <- 0
-                                        for (r in 1:nrow(p[[k]])){
-                                                fx$fxr <- r
-                                                if ((p[[k]][r, "FixationIndex"]== 0 & (p[[k]][r,z1[m]]) %in% 0)) {
-                                                                fx$x2 <- r
-                                                }
-                                                if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 0 & fx$f1 > 0) {
-                                                                fx$f1 <- 0
-                                                }
-                                                if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 1) {
-                                                        if (fx$f1 ==0) {
-                                                                fx$x1 <- r
-                                                                fx$f1 <- p[[k]][r, "FixationIndex"]
-                                                        } else if ((p[[k]][r, "FixationIndex"]-fx$f1)==0) {
-                                                                fx$x1 <- r
-                                                        } else if ((p[[k]][r, "FixationIndex"]-fx$f1)==1) {
-                                                                for (s in (fx$x1+1):(fx$x2)) {
-                                                                        e[[i]][which(e[[i]]$Page==q[k]),][s,z1[m]] <- 2
-                                                                }
-                                                                p[[k]][(fx$x1+1):(fx$x2), z1[m]] <- 2
-                                                                fx$x1 <- r
-                                                                fx$f1 <- p[[k]][r, "FixationIndex"]
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                }
-        }
-}
-
-ecopy <- e
-e <- ecopy
-Sys.time()
-
-###########
-# new function for relabling 
-e1 <- d
-fx <- data.frame(fxr=0,x1=0,x2=0,f1=0
-                 # , Time=0
-)
-Sys.time()
-for (i in 1:length(e1)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
-        # for (i in 1:1) { #length(g) is equal to number of participants
-        p <- split(e1[[i]], e1[[i]]$Page)
-        q <- as.numeric(levels(e1[[i]]$Page))  # I could not select an element of a vector, so I converted it
-        for (k in 1:length(q)) {
-                if (q[k]>=0) {
-                        z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
-                        z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
-                        if (length(z1)>0) {
                                 for (m in 1:length(z1)) { # go column by column of AOIs
-                                        fx$fxr <- fx$x1 <- fx$x2 <- fx$f1 <- 0
-                                        browser()
+                                        fx$t1 <- fx$t2 <- fx$FixInd <- 0
                                         x <- unique(p[[k]]$FixationIndex)[unique(p[[k]]$FixationIndex)>0] # x: fixations
-                                        for  (r in 1:nrow(x)) {
+                                        for  (r in 1:length(x)) {
                                                 xy <- p[[k]][which(p[[k]]$FixationIndex==x[r]),]
-                                                if (xy[2,z1[m]] %in% 1) {           # the first row of each fixation would have NA, so looked at the second row
+                                                if (xy[2,z1[m]] %in% 1) {           # the first row of each fixation might be NA, so looked at the second row
                                                 
-                                                
-                                                        if (fx$f1 ==0) {
-                                                                fx$f1 <- xy[1,"FixationIndex"] 
-                                                                fx$x1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
+                                                        if (fx$FixInd ==0) {
+                                                                fx$FixInd <- xy[1,"FixationIndex"] 
+                                                                fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
                                                         } else {
-                                                                fx$x2 <- xy[1,"RecordingTimestamp"]     #timestamp of first row of second consecutive fixation on the AOI
-                                                                
-                                                                e[[i]][which(e[[i]]$RecordingTimestamp > x1 & e[[i]]$RecordingTimestamp < x2),z1[m]] <- 2
-                                                                # xy[which(xy$RecordingTimestamp > 35548 & xy$RecordingTimestamp < 35575),15] <- 2
-                                                                
-                                                                fx$f1 <- xy[1,"FixationIndex"] 
-                                                                fx$x1 <- xy[nrow(xy),"RecordingTimestamp"] 
+                                                                fx$t2 <- xy[1,"RecordingTimestamp"]     #timestamp of first row of second consecutive fixation on the AOI
+                                                                e[[i]][which(e[[i]]["RecordingTimestamp"] > fx$t1 & e[[i]]["RecordingTimestamp"] < fx$t2),z1[m]] <- 2
+                                                                fx$FixInd <- xy[1,"FixationIndex"] 
+                                                                fx$t1 <- xy[nrow(xy),"RecordingTimestamp"] 
                                                         }
-                                                } else if (xy[2,z1] %in% 0 & fx$f1>0) {
-                                                        fx$f1 <- 0
-                                                }
-                                        }
-                                        
-                                        
-                                        View(xy[which(xy$RecordingTimestamp > 35533 & xy$RecordingTimestamp < 35541),]) 
-                                        
-                                        
-                                        for (r in 1:nrow(p[[k]])){
-                                                fx$fxr <- r
-                                                if ((p[[k]][r, "FixationIndex"]== 0 & (p[[k]][r,z1[m]]) %in% 0)) {
-                                                        fx$x2 <- r
-                                                }
-                                                if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 0 & fx$f1 > 0) {
-                                                        fx$f1 <- 0
-                                                }
-                                                if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 1) {
-                                                        if (fx$f1 ==0) {
-                                                                fx$x1 <- r
-                                                                fx$f1 <- p[[k]][r, "FixationIndex"]
-                                                        } else if ((p[[k]][r, "FixationIndex"]-fx$f1)==0) {
-                                                                fx$x1 <- r
-                                                        } else if ((p[[k]][r, "FixationIndex"]-fx$f1)==1) {
-                                                                for (s in (fx$x1+1):(fx$x2)) {
-                                                                        e[[i]][which(e1[[i]]$Page==q[k]),][s,z1[m]] <- 2
-                                                                }
-                                                                p[[k]][(fx$x1+1):(fx$x2), z1[m]] <- 2
-                                                                fx$x1 <- r
-                                                                fx$f1 <- p[[k]][r, "FixationIndex"]
-                                                        }
+                                                } else if (xy[2,z1[m]] %in% 0 & fx$FixInd>0) {
+                                                        fx$FixInd <- 0
                                                 }
                                         }
                                 }
@@ -291,9 +254,6 @@ for (i in 1:length(e1)) { #length(g) is equal to number of participants # terrib
 ecopy <- e
 e <- ecopy
 Sys.time()
-
-
-
 
 ###########
 
@@ -315,8 +275,8 @@ for (i in 1:length(g)) {
         g[[i]] <- temp
 }
 
-for (i in 1:length(g)) { #length(g) is equal to number of participants
-# for (i in 1:1) { #length(g) is equal to number of participants
+# for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min
+for (i in 2:2) { 
         s <- 1          #counter for rows
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  #I could not select an element of a vector, so I converted it
@@ -328,13 +288,16 @@ for (i in 1:length(g)) { #length(g) is equal to number of participants
                                 if (h[j] > 0) {
                                         g[[i]][s,"Page"] <- q[k]
                                         z <- which(str_detect(names(y),"AOI")) 
-                                        z1 <- z[which(sapply(y[,z], function(x) sum(x,na.rm = TRUE))>0)]
-                        
+                                        z1 <- z[which(sapply(y[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI belongs to this page
                                         for (m in 1:length(z)) {
-                                                if (z[m] %in% z1) {
-                                                        g[[i]][s,length(va)+m] <- 1      
-                                                } else {
-                                                        g[[i]][s,length(va)+m] <- 0
+                                                if (z[m] %in% z1) { #condition to separate AOIs on/out of the page
+                                                        if (sum(y[,z[m]],na.rm = TRUE)>0) { #condition to check AOI with value of 1 (>0): showing the fixation on the AOI
+                                                                g[[i]][s,length(va)+m] <- 1
+                                                        } else if (sum(y[,z[m]],na.rm = TRUE)==0) { #condition to check AOI with value of 0: showing the fixation not on the AOI
+                                                                g[[i]][s,length(va)+m] <- 0
+                                                        }
+                                                } else { #AOIs out of this page
+                                                        g[[i]][s,length(va)+m] <- NA
                                                 }
                                         }
                                         g[[i]][s,"IVT"] <- h[j]
@@ -393,7 +356,7 @@ for (i in 1:length(gs)) {
 }
 
 Sys.time()
-for (i in 1:length(gs)) { #length(gs) is equal to number of participants
+for (i in 1:length(gs)) { #length(gs) is equal to number of participants # running time 30 min
 # for (i in 1:2) { #length(gs) is equal to number of participants
         s <- 1          #counter for rows
         ps <- split(e[[i]], e[[i]]$Page)
@@ -407,12 +370,25 @@ for (i in 1:length(gs)) { #length(gs) is equal to number of participants
                                 if (hs[j] > 0) {
                                         gs[[i]][s,"Page"] <- qs[k]
                                         z <- which(str_detect(names(ys),"AOI")) 
-                                        z1 <- z[which(sapply(ys[,z], function(x) sum(x,na.rm = TRUE))>0)]
+                                        # z1 <- z[which(sapply(ys[,z], function(x) sum(x,na.rm = TRUE))>0)]
+                                        z1 <- z[which(sapply(ys[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI belongs to this page
+                                        
+                                        # for (m in 1:length(z)) {
+                                        #         if (z[m] %in% z1) {
+                                        #                 gs[[i]][s,length(vas)+m] <- 1      
+                                        #         } else {
+                                        #                 gs[[i]][s,length(vas)+m] <- 0
+                                        #         }
+                                        # }
                                         for (m in 1:length(z)) {
-                                                if (z[m] %in% z1) {
-                                                        gs[[i]][s,length(vas)+m] <- 1      
-                                                } else {
-                                                        gs[[i]][s,length(vas)+m] <- 0
+                                                if (z[m] %in% z1) { #condition to separate AOIs on/out of the page
+                                                        if (sum(ys[,z[m]],na.rm = TRUE)>0) { #condition to check AOI with value of 1 (>0): showing the saccade on the AOI
+                                                                gs[[i]][s,length(vas)+m] <- 1
+                                                        } else if (sum(ys[,z[m]],na.rm = TRUE)==0) { #condition to check AOI with value of 0: showing the saccade not on the AOI
+                                                                gs[[i]][s,length(vas)+m] <- 0
+                                                        }
+                                                } else { #AOIs out of this page
+                                                        gs[[i]][s,length(vas)+m] <- NA
                                                 }
                                         }
                                         # browser()
@@ -473,39 +449,51 @@ Sys.time()
 
 ####
 # needed:  truncating AOI names
+# which(str_detect(names(ys),"AOI")) 
+# substr(AllPage$Participant,start=1, stop=5)
 ####
-for (i in 1:length(g)) {
+# for (i in 1:length(g)) {
+for (i in 2:2) {
         s <- 1
         for (j in 1:length(zz)) {
-                if (length(which(g[[i]][zz[j]]==1))>0) {
-                        y <- g[[i]][which(g[[i]][zz[j]]==1),1:length(va)]
-                        o <- 0
-                        for (k in 3:length(y)) {
+                # print(zz[j])
+                # browser() #checking AOI.WholePage.Hit.2 on page 2
+                if (length(which(g[[i]][zz[j]]==0))>0) {
+                        if (length(which(g[[i]][zz[j]]==1))>0) {
+                                y <- g[[i]][which(g[[i]][zz[j]]==1),1:length(va)]
+                                o <- 0
                                 # browser()
-                                
-                                # below two lines may move out of the for loop # even page and AOI assignment may move out of if loop
+                                for (k in 3:length(y)) {
+                                        # browser()
+                                        
+                                        # below two lines may move out of the for loop # even page and AOI assignment may move out of if loop
+                                        gAOI[[i]][s,"Page"] <- y[1,"Page"]
+                                        gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
+                                        gAOI[[i]][s,k+o] <- mean(y[,k],na.rm = TRUE)
+                                        gAOI[[i]][s,k+o+1] <- sd(y[,k],na.rm = TRUE)
+                                        o <- o+1
+                                }
+                        } else {
+                                y <- g[[i]][which(g[[i]][zz[j]]==0),1:length(va)]
                                 gAOI[[i]][s,"Page"] <- y[1,"Page"]
                                 gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
-                                gAOI[[i]][s,k+o] <- mean(y[,k],na.rm = TRUE)
-                                gAOI[[i]][s,k+o+1] <- sd(y[,k],na.rm = TRUE)
-                                o <- o+1
+                                o <- 0
+                                for (k in 3:length(y)) {
+                                        gAOI[[i]][s,k+o] <- NA
+                                        gAOI[[i]][s,k+o+1] <- NA
+                                        o <- o+1
+                                }
                         }
-                } else {
-                        gAOI[[i]][s,"Page"] <- y[1,"Page"]
-                        gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
-                        o <- 0
-                        for (k in 3:length(y)) {
-                                gAOI[[i]][s,k+o] <- NA
-                                gAOI[[i]][s,k+o+1] <- NA
-                                o <- o+1
-                        }
-                }
                 s <- s+1
                 # browser()
+                }
         }
 }
 
 Sys.time()
+gAOIcopy <- gAOI
+gAOI<- gAOIcopy
+
 # Summarize the saccade data for each AOI
 zzs <- which(str_detect(names(gs[[1]]),"AOI"))
 tempsAOI <- data.frame("Page", "AOI"=NA,
@@ -526,6 +514,7 @@ for (i in 1:length(gs)) {
 
 ####
 # needed:  truncating AOI names
+
 ####
 for (i in 1:length(gs)) {
         s <- 1
@@ -551,35 +540,40 @@ for (i in 1:length(gs)) {
                                 o <- o+1
                         }
                 }
+                gsAOI[[i]][s,"Sac_Dens_SD"] <- NA #overriding the Sac_Dens_SD calculations because this is meaningless, but to keep same structure of fixation and saccade outputs, we kept this column
                 s <- s+1
                 # browser()
         }
 }
 
 Sys.time()
+gsAOIcopy <- gsAOI
+gsAOI<- gsAOIcopy
+
 #######
 library(dplyr)
 # FixPage and SacPage: matrix of means of columns (means of data of all fixations of each participant for each page)
 # summary of each paricipant
+
 gPage <- list()
 gPage <- lapply(g, function(x) summarise(x %>% group_by(Page),
-                                        F_Dens_M= mean(Fix_Dens, na.rm = TRUE),
-                                        F_Dens_SD= sd(Fix_Dens, na.rm = TRUE),
-                                        # F_Dens_C_Dur= mean(Fix_Dens_C_Dur, na.rm = TRUE),
-                                        F_P_M= mean(Fix_P_Mean, na.rm = TRUE),
-                                        F_P_SD= sd(Fix_P_Mean, na.rm = TRUE), 
-                                        F_PD_M= mean(Fix_PD_Mean, na.rm = TRUE),
-                                        F_PD_SD= sd(Fix_PD_Mean, na.rm = TRUE),
-                                        F_PD_Perc_M= mean(Fix_PD_Perc_Mean, na.rm = TRUE), 
-                                        F_PD_Perc_SD= sd(Fix_PD_Perc_Mean, na.rm = TRUE),
-                                        # F_Velocity_M= mean(Velocity, na.rm = TRUE),
-                                        # F_Velocity_SD= sd(Velocity, na.rm = TRUE),
-                                        F_Dur_M= mean(Fix_Dur, na.rm = TRUE),
-                                        F_Dur_Sum= sum(Fix_Dur, na.rm = TRUE),
-                                        F_C_Dur_M= mean(Fix_C_Dur, na.rm = TRUE),
-                                        F_C_Dur_Sum= sum(Fix_C_Dur, na.rm = TRUE),
-                                        F_Cnt_Dur_M= mean(Fix_Cnt_Dur, na.rm = TRUE),
-                                        F_Cnt_Dur_Sum= sum(Fix_Cnt_Dur, na.rm = TRUE)))
+                                        Fix_Dens_M= mean(Fix_Dens, na.rm = TRUE),
+                                        Fix_Dens_SD= sd(Fix_Dens, na.rm = TRUE),
+                                        # Fix_Dens_C_Dur= mean(Fix_Dens_C_Dur, na.rm = TRUE),
+                                        Fix_P_M= mean(Fix_P_Mean, na.rm = TRUE),
+                                        Fix_P_SD= sd(Fix_P_Mean, na.rm = TRUE), 
+                                        Fix_PD_M= mean(Fix_PD_Mean, na.rm = TRUE),
+                                        Fix_PD_SD= sd(Fix_PD_Mean, na.rm = TRUE),
+                                        Fix_PD_Perc_M= mean(Fix_PD_Perc_Mean, na.rm = TRUE), 
+                                        Fix_PD_Perc_SD= sd(Fix_PD_Perc_Mean, na.rm = TRUE),
+                                        # Fix_Velocity_M= mean(Velocity, na.rm = TRUE),
+                                        # Fix_Velocity_SD= sd(Velocity, na.rm = TRUE),
+                                        Fix_Dur_M= mean(Fix_Dur, na.rm = TRUE),
+                                        Fix_Dur_SD= sd(Fix_Dur, na.rm = TRUE),
+                                        Fix_C_Dur_M= mean(Fix_C_Dur, na.rm = TRUE),
+                                        Fix_C_Dur_SD= sd(Fix_C_Dur, na.rm = TRUE),
+                                        Fix_Cnt_Dur_M= mean(Fix_Cnt_Dur, na.rm = TRUE),
+                                        Fix_Cnt_Dur_SD= sd(Fix_Cnt_Dur, na.rm = TRUE)))
 FixPage <- do.call(rbind,gPage)
 FixPageCopy <- FixPage
 
@@ -588,22 +582,23 @@ Sys.time()
 # gsPage: corresponding gPage for Saccades
 gsPage <- list()
 gsPage <- lapply(gs, function(x) summarise(x %>% group_by(Page), 
-                                        S_Dens_M= mean(Sac_Dens, na.rm = TRUE),
-                                        # S_Dens_C_Dur= mean(Sac_Dens_C_Dur, na.rm = TRUE),
-                                        S_P_M= mean(Sac_P_Mean, na.rm = TRUE),
-                                        S_P_SD= sd(Sac_P_Mean, na.rm = TRUE), 
-                                        S_PD_M= mean(Sac_PD_Mean, na.rm = TRUE),
-                                        S_PD_SD= sd(Sac_PD_Mean, na.rm = TRUE),
-                                        S_PD_Perc_M= mean(Sac_PD_Perc_Mean, na.rm = TRUE), 
-                                        S_PD_Perc_SD= sd(Sac_PD_Perc_Mean, na.rm = TRUE),
-                                        # S_Velocity_M= mean(Sac_Velocity, na.rm = TRUE),
-                                        # S_Velocity_SD= sd(Sac_Velocity, na.rm = TRUE),
-                                        S_Dur_M= mean(Sac_Dur, na.rm = TRUE),
-                                        S_Dur_Sum= sum(Sac_Dur, na.rm = TRUE),
-                                        S_C_Dur_M= mean(Sac_C_Dur, na.rm = TRUE),
-                                        S_C_Dur_Sum= sum(Sac_C_Dur, na.rm = TRUE),
-                                        S_Cnt_Dur_M= mean(Sac_Cnt_Dur, na.rm = TRUE),
-                                        S_Cnt_Dur_Sum= sum(Sac_Cnt_Dur, na.rm = TRUE)))
+                                        Sac_Dens_M= mean(Sac_Dens, na.rm = TRUE),
+                                        Sac_Dens_SD= NA,
+                                        # Sac_Dens_C_Dur= mean(Sac_Dens_C_Dur, na.rm = TRUE),
+                                        Sac_P_M= mean(Sac_P_Mean, na.rm = TRUE),
+                                        Sac_P_SD= sd(Sac_P_Mean, na.rm = TRUE), 
+                                        Sac_PD_M= mean(Sac_PD_Mean, na.rm = TRUE),
+                                        Sac_PD_SD= sd(Sac_PD_Mean, na.rm = TRUE),
+                                        Sac_PD_Perc_M= mean(Sac_PD_Perc_Mean, na.rm = TRUE), 
+                                        Sac_PD_Perc_SD= sd(Sac_PD_Perc_Mean, na.rm = TRUE),
+                                        # Sac_Velocity_M= mean(Sac_Velocity, na.rm = TRUE),
+                                        # Sac_Velocity_SD= sd(Sac_Velocity, na.rm = TRUE),
+                                        Sac_Dur_M= mean(Sac_Dur, na.rm = TRUE),
+                                        Sac_Dur_SD= sd(Sac_Dur, na.rm = TRUE),
+                                        Sac_C_Dur_M= mean(Sac_C_Dur, na.rm = TRUE),
+                                        Sac_C_Dur_SD= sd(Sac_C_Dur, na.rm = TRUE),
+                                        Sac_Cnt_Dur_M= mean(Sac_Cnt_Dur, na.rm = TRUE),
+                                        Sac_Cnt_Dur_SD= sd(Sac_Cnt_Dur, na.rm = TRUE)))
 SacPage <- do.call(rbind,gsPage)
 Sys.time()
 
@@ -646,44 +641,45 @@ for (i in 1:length(d)) { #length(d) is equal to number of participants
 # summary of each paricipant
 gTotal <- list()
 gTotal <- lapply(g, function(x) summarise(x,
-                                         F_Dens_M= mean(Fix_Dens, na.rm = TRUE),
-                                         F_Dens_SD= sd(Fix_Dens, na.rm = TRUE),
-                                         # F_Dens_C_Dur= mean(Fix_Dens_C_Dur, na.rm = TRUE),
-                                         F_P_M= mean(Fix_P_Mean, na.rm = TRUE),
-                                         F_P_SD= sd(Fix_P_Mean, na.rm = TRUE), 
-                                         F_PD_M= mean(Fix_PD_Mean, na.rm = TRUE),
-                                         F_PD_SD= sd(Fix_PD_Mean, na.rm = TRUE),
-                                         F_PD_Perc_M= mean(Fix_PD_Perc_Mean, na.rm = TRUE), 
-                                         F_PD_Perc_SD= sd(Fix_PD_Perc_Mean, na.rm = TRUE),
-                                         # F_Velocity_M= mean(Velocity, na.rm = TRUE),
-                                         # F_Velocity_SD= sd(Velocity, na.rm = TRUE),
-                                         F_Dur_M= mean(Fix_Dur, na.rm = TRUE),
-                                         F_Dur_Sum= sum(Fix_Dur, na.rm = TRUE),
-                                         F_C_Dur_M= mean(Fix_C_Dur, na.rm = TRUE),
-                                         F_C_Dur_Sum= sum(Fix_C_Dur, na.rm = TRUE),
-                                         F_Cnt_Dur_M= mean(Fix_Cnt_Dur, na.rm = TRUE),
-                                         F_Cnt_Dur_Sum= sum(Fix_Cnt_Dur, na.rm = TRUE)))
+                                         Fix_Dens_M= mean(Fix_Dens, na.rm = TRUE),
+                                         Fix_Dens_SD= sd(Fix_Dens, na.rm = TRUE),
+                                         # Fix_Dens_C_Dur= mean(Fix_Dens_C_Dur, na.rm = TRUE),
+                                         Fix_P_M= mean(Fix_P_Mean, na.rm = TRUE),
+                                         Fix_P_SD= sd(Fix_P_Mean, na.rm = TRUE), 
+                                         Fix_PD_M= mean(Fix_PD_Mean, na.rm = TRUE),
+                                         Fix_PD_SD= sd(Fix_PD_Mean, na.rm = TRUE),
+                                         Fix_PD_Perc_M= mean(Fix_PD_Perc_Mean, na.rm = TRUE), 
+                                         Fix_PD_Perc_SD= sd(Fix_PD_Perc_Mean, na.rm = TRUE),
+                                         # Fix_Velocity_M= mean(Velocity, na.rm = TRUE),
+                                         # Fix_Velocity_SD= sd(Velocity, na.rm = TRUE),
+                                         Fix_Dur_M= mean(Fix_Dur, na.rm = TRUE),
+                                         Fix_Dur_SD= sd(Fix_Dur, na.rm = TRUE),
+                                         Fix_C_Dur_M= mean(Fix_C_Dur, na.rm = TRUE),
+                                         Fix_C_Dur_SD= sd(Fix_C_Dur, na.rm = TRUE),
+                                         Fix_Cnt_Dur_M= mean(Fix_Cnt_Dur, na.rm = TRUE),
+                                         Fix_Cnt_Dur_SD= sd(Fix_Cnt_Dur, na.rm = TRUE)))
 FixTotal <- do.call(rbind,gTotal)
 
 # gsTotal: corresponding gTotal for Saccades
 gsTotal <- list()
 gsTotal <- lapply(gs, function(x) summarise(x, 
-                                           S_Dens_M= mean(Sac_Dens, na.rm = TRUE),
-                                           # S_Dens_C_Dur= mean(Sac_Dens_C_Dur, na.rm = TRUE),
-                                           S_P_M= mean(Sac_P_Mean, na.rm = TRUE),
-                                           S_P_SD= sd(Sac_P_Mean, na.rm = TRUE), 
-                                           S_PD_M= mean(Sac_PD_Mean, na.rm = TRUE),
-                                           S_PD_SD= sd(Sac_PD_Mean, na.rm = TRUE),
-                                           S_PD_Perc_M= mean(Sac_PD_Perc_Mean, na.rm = TRUE), 
-                                           S_PD_Perc_SD= sd(Sac_PD_Perc_Mean, na.rm = TRUE),
-                                           # S_Velocity_M= mean(Sac_Velocity, na.rm = TRUE),
-                                           # S_Velocity_SD= sd(Sac_Velocity, na.rm = TRUE),
-                                           S_Dur_M= mean(Sac_Dur, na.rm = TRUE),
-                                           S_Dur_Sum= sum(Sac_Dur, na.rm = TRUE),
-                                           S_C_Dur_M= mean(Sac_C_Dur, na.rm = TRUE),
-                                           S_C_Dur_Sum= sum(Sac_C_Dur, na.rm = TRUE),
-                                           S_Cnt_Dur_M= mean(Sac_Cnt_Dur, na.rm = TRUE),
-                                           S_Cnt_Dur_Sum= sum(Sac_Cnt_Dur, na.rm = TRUE)))
+                                           Sac_Dens_M= mean(Sac_Dens, na.rm = TRUE),
+                                           Sac_Dens_SD= NA,
+                                           # Sac_Dens_C_Dur= mean(Sac_Dens_C_Dur, na.rm = TRUE),
+                                           Sac_P_M= mean(Sac_P_Mean, na.rm = TRUE),
+                                           Sac_P_SD= sd(Sac_P_Mean, na.rm = TRUE), 
+                                           Sac_PD_M= mean(Sac_PD_Mean, na.rm = TRUE),
+                                           Sac_PD_SD= sd(Sac_PD_Mean, na.rm = TRUE),
+                                           Sac_PD_Perc_M= mean(Sac_PD_Perc_Mean, na.rm = TRUE), 
+                                           Sac_PD_Perc_SD= sd(Sac_PD_Perc_Mean, na.rm = TRUE),
+                                           # Sac_Velocity_M= mean(Sac_Velocity, na.rm = TRUE),
+                                           # Sac_Velocity_SD= sd(Sac_Velocity, na.rm = TRUE),
+                                           Sac_Dur_M= mean(Sac_Dur, na.rm = TRUE),
+                                           Sac_Dur_SD= sd(Sac_Dur, na.rm = TRUE),
+                                           Sac_C_Dur_M= mean(Sac_C_Dur, na.rm = TRUE),
+                                           Sac_C_Dur_SD= sd(Sac_C_Dur, na.rm = TRUE),
+                                           Sac_Cnt_Dur_M= mean(Sac_Cnt_Dur, na.rm = TRUE),
+                                           Sac_Cnt_Dur_SD= sd(Sac_Cnt_Dur, na.rm = TRUE)))
 SacTotal <- do.call(rbind,gsTotal)
 
 # AllPage is aggregation of fixation and sacccade data at the page level
