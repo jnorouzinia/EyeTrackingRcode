@@ -54,7 +54,9 @@ for (i in 1:length(a)) {
                                                        "PupilLeft","PupilRight",
                                                        "GazeEventDuration", "MediaName", "RecordingTimestamp",
                                                        "GazeEventType", "SaccadicAmplitude","RecordingDuration",
-                                                       "SaccadeIndex","AbsoluteSaccadicDirection","EyeTrackerTimestamp")),which(str_detect(names(a[[i]]),"AOI")))
+                                                       "SaccadeIndex","AbsoluteSaccadicDirection","EyeTrackerTimestamp",
+                                                       "FixationPointX..MCSpx.","FixationPointY..MCSpx.",
+                                                       "GazePointX..MCSpx.","GazePointY..MCSpx.")),which(str_detect(names(a[[i]]),"AOI")))
                          ]
 }
 Sys.time()
@@ -211,7 +213,7 @@ d <- dcopy1
 # e <- ecopy
 # Sys.time()
 
-# relabling non-fixation gazes between each two consecutive fixation on the AOI as gazes belong to AOI (2 on the AOI column for these gazes)
+# relabeling non-fixation gazes between each two consecutive fixation on the AOI as gazes belong to AOI (2 on the AOI column for these gazes)
 e <- d
 fx <- data.frame(t1=0,t2=0,FixInd=0)
 Sys.time()
