@@ -374,7 +374,6 @@ for (i in 1:length(gs)) { #length(gs) is equal to number of participants # runni
                                         z <- which(str_detect(names(ys),"AOI")) 
                                         # z1 <- z[which(sapply(ys[,z], function(x) sum(x,na.rm = TRUE))>0)]
                                         z1 <- z[which(sapply(ys[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI belongs to this page
-                                        
                                         # for (m in 1:length(z)) {
                                         #         if (z[m] %in% z1) {
                                         #                 gs[[i]][s,length(vas)+m] <- 1      
