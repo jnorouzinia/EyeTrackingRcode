@@ -2,7 +2,7 @@
 # without removing communal fixation between two pages # with a second and calculated duration of events by timestamp
 # rm(list = ls(all.names = TRUE)) removing all variables
 
-setwd("~/Desktop/MSTBI/TobiiExtractedData/02-MSTBI04-RawData-csv")
+setwd("~/Desktop/MSTBI/TobiiExtractedData/02-MSTBI05-RawData-csv")
 library(stringr)
 library(dplyr)
 options(scipen = 999)
@@ -97,7 +97,7 @@ for (i in 1:length(b)) {
 # without removing gaze points which miss GazeX, GazeY and probably pupil data #these points mostly includes unclassified, fixation at the length of 1 gaze happened in the time start/end an URL, 
 Sys.time()
 c <- b
-for (i in 1: length(c)) { # running for about 6 hours # last time 3:30 hours !!! (at least 1 less participant)
+for (i in 1: length(c)) { # running for about 5:30 hours 
 # for (i in 1:1) {
         for (j in 1:nrow(c[[i]]))
         if (is.na(c[[i]][j,"PupilLeft"]) & is.na(c[[i]][j,"PupilRight"])) {c[[i]][j,"AvePupil"] <- NA
@@ -111,7 +111,7 @@ dcopy <- d
 d <- dcopy
 
 Sys.time()
-for (i in 1:length(d)) { # running for about 11 hours
+for (i in 1:length(d)) { # running for about 15 hours
 # for (i in 10:length(d)) {
         d[[i]][,"Page"] <- NA
         # browser()
@@ -277,8 +277,8 @@ for (i in 1:length(g)) {
         g[[i]] <- temp
 }
 
-# for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min
-for (i in 2:2) { 
+for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min
+# for (i in 2:2) { 
         s <- 1          #counter for rows
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  #I could not select an element of a vector, so I converted it
@@ -427,11 +427,10 @@ Sys.time()
 gscopy <- gs
 gs <- gscopy
 
-
 # gAOI and gsAOI: matrix of means of columns (means of data of all fixations of each participant for each AOI on each page)
 # Summarize the fixation data for each AOI
 zz <- which(str_detect(names(g[[1]]),"AOI"))
-tempAOI <- data.frame("Page"=NA, "AOI"=NA, 
+tempAOI <- data.frame("Rec"=NA, "Page"=NA, "AOI"=NA, 
                       "Fix_Dens_M"=NA, "Fix_Dens_SD"=NA,
                       "Fix_P_M"=NA, "Fix_P_SD"=NA, 
                       "Fix_PD_M"=NA, "Fix_PD_SD"=NA,
@@ -449,17 +448,17 @@ for (i in 1:length(g)) {
 Sys.time()
 
 ####
-# needed:  truncating AOI names
-# which(str_detect(names(ys),"AOI")) 
-# substr(AllPage$Participant,start=1, stop=5)
+# needed:  renaming AOIs
 ####
-# for (i in 1:length(g)) {
-for (i in 2:2) {
+for (i in 1:length(g)) {
+# for (i in 2:2) {
         s <- 1
+        print(i)
         for (j in 1:length(zz)) {
                 # print(zz[j])
                 # browser() #checking AOI.WholePage.Hit.2 on page 2
                 if (length(which(g[[i]][zz[j]]==0))>0) {
+                        
                         if (length(which(g[[i]][zz[j]]==1))>0) {
                                 y <- g[[i]][which(g[[i]][zz[j]]==1),1:length(va)]
                                 o <- 0
@@ -468,20 +467,22 @@ for (i in 2:2) {
                                         # browser()
                                         
                                         # below two lines may move out of the for loop # even page and AOI assignment may move out of if loop
+                                        gAOI[[i]][s,"Rec"] <- substr(names(g)[i],start=16, stop=21)
                                         gAOI[[i]][s,"Page"] <- y[1,"Page"]
                                         gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
-                                        gAOI[[i]][s,k+o] <- mean(y[,k],na.rm = TRUE)
-                                        gAOI[[i]][s,k+o+1] <- sd(y[,k],na.rm = TRUE)
+                                        gAOI[[i]][s,k+1+o] <- mean(y[,k],na.rm = TRUE) #k+1: because the number of columns in gAOI is one more than g (added Rec)
+                                        gAOI[[i]][s,k+1+o+1] <- sd(y[,k],na.rm = TRUE) #o & o+1: columns for mean & sd of each variable
                                         o <- o+1
                                 }
                         } else {
                                 y <- g[[i]][which(g[[i]][zz[j]]==0),1:length(va)]
+                                gAOI[[i]][s,"Rec"] <- substr(names(g)[i],start=16, stop=21)
                                 gAOI[[i]][s,"Page"] <- y[1,"Page"]
                                 gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
                                 o <- 0
                                 for (k in 3:length(y)) {
-                                        gAOI[[i]][s,k+o] <- NA
-                                        gAOI[[i]][s,k+o+1] <- NA
+                                        gAOI[[i]][s,k+1+o] <- NA
+                                        gAOI[[i]][s,k+1+o+1] <- NA
                                         o <- o+1
                                 }
                         }
@@ -490,14 +491,27 @@ for (i in 2:2) {
                 }
         }
 }
-
+names(gAOI) <- names(g)
 Sys.time()
 gAOIcopy <- gAOI
 gAOI<- gAOIcopy
+# test should be added. renaming AOIs should be done.
+AOI <- do.call(rbind,gAOI)
+rownames(AOI) <- c()
+
+
+# for (i in 1:length(a)) {
+#         print(names(a)[i])
+#         print(length(a[[i]]))
+# 
+# }
+
+write.csv(AOI, file = "AOI-Fix-report.csv")
+
 
 # Summarize the saccade data for each AOI
 zzs <- which(str_detect(names(gs[[1]]),"AOI"))
-tempsAOI <- data.frame("Page", "AOI"=NA,
+tempsAOI <- data.frame("Rec"=NA, "Page", "AOI"=NA,
                        "Sac_Dens_M"=NA, "Sac_Dens_SD"=NA,
                        "Sac_P_M"=NA, "Sac_P_SD"=NA,
                        "Sac_PD_M"=NA, "Sac_PD_SD"=NA,
@@ -514,7 +528,7 @@ for (i in 1:length(gs)) {
 }
 
 ####
-# needed:  truncating AOI names
+# needed:  renaming AOIs
 
 ####
 for (i in 1:length(gs)) {
@@ -527,8 +541,8 @@ for (i in 1:length(gs)) {
                                 # browser()
                                 gsAOI[[i]][s,"Page"] <- y[1,"Page"]
                                 gsAOI[[i]][s,"AOI"] <- names(gs[[i]])[zzs[j]]
-                                gsAOI[[i]][s,k+o] <- mean(y[,k],na.rm = TRUE)
-                                gsAOI[[i]][s,k+o+1] <- sd(y[,k],na.rm = TRUE)
+                                gsAOI[[i]][s,k+1+o] <- mean(y[,k],na.rm = TRUE)
+                                gsAOI[[i]][s,k+1+o+1] <- sd(y[,k],na.rm = TRUE)
                                 o <- o+1
                         }
                 } else {
@@ -536,8 +550,8 @@ for (i in 1:length(gs)) {
                         gsAOI[[i]][s,"AOI"] <- names(gs[[i]])[zzs[j]]
                         o <- 0
                         for (k in 3:length(y)) {
-                                gsAOI[[i]][s,k+o] <- NA
-                                gsAOI[[i]][s,k+o+1] <- NA
+                                gsAOI[[i]][s,k+1+o] <- NA
+                                gsAOI[[i]][s,k+1+o+1] <- NA
                                 o <- o+1
                         }
                 }
@@ -607,10 +621,10 @@ options(scipen = 999) # converts scientific numbers
 # AllPage is aggregation of fixation and sacccade data at the page level
 AllPage <- cbind(FixPage, SacPage)
 # Separating Participant, Test and Rec and removing row.names   # the code has written in a way that handles Recording number with 3 digits
-AllPage[,"Participant"] <- substr(row.names(AllPage),start=1, stop=12)
+AllPage[,"Participant"] <- substr(row.names(AllPage),start=10, stop=21)
 AllPage[,"Test"] <- substr(AllPage$Participant,start=1, stop=5)
 AllPage[,"Rec"] <- substr(AllPage$Participant,start=11, stop=12)
-AllPage <- AllPage[,c(30,31,32,1:29)]
+AllPage <- AllPage[,c(31,32,33,1:30)]
 rownames(AllPage) <- c()
 # Removing second column of page number
 AllPage <- subset(AllPage, select = -c(Page.1) )
@@ -620,7 +634,7 @@ AllPageCopy <- AllPage
 AllPage <- AllPageCopy
 
 library(stringr)
-# Adding NoFixation, NoSaccade, and RecDuration for each page
+# Adding NoFixation, NoSaccade, and RecDuration for each page # takes a few minutes to run
 for (i in 1:length(d)) { #length(d) is equal to number of participants
         p <- split(d[[i]], d[[i]]$Page)
         q <- as.numeric(levels(d[[i]]$Page))  #I could not select an element of a vector, so I converted it
@@ -636,6 +650,7 @@ for (i in 1:length(d)) { #length(d) is equal to number of participants
                 }
         }
 }
+Sys.time()
 
 # redoing page level calculation for all data points of each participant
 # FixTotal and SacTotal: matrix of means of columns (means of data of all fixations of each participant with accumulation of pages)
@@ -686,11 +701,12 @@ SacTotal <- do.call(rbind,gsTotal)
 # AllPage is aggregation of fixation and sacccade data at the page level
 AllTotal <- cbind(FixTotal, SacTotal)
 # separating Participant, Test and Rec and removing row.names   # the code has written in a way that handles Recording number with 3 digits
-AllTotal[,"Participant"] <- substr(row.names(AllTotal),start=1, stop=12)
+AllTotal[,"Participant"] <- substr(row.names(AllTotal),start=10, stop=21)
 AllTotal[,"Test"] <- substr(AllTotal$Participant,start=1, stop=5)
 AllTotal[,"Rec"] <- substr(AllTotal$Participant,start=11, stop=12)
-AllTotal <- AllTotal[,c(28,29,30,1:27)]
+AllTotal <- AllTotal[,c(29,30,31,1:28)]
 rownames(AllTotal) <- c()
+
 
 # Adding NoFixation, NoSaccade, and RecDuration to each participant's data
 for (i in 1:length(g)) { #length(g) is equal to number of participants
@@ -743,6 +759,7 @@ ttestP[1,] <- NA
 s <- 1
 for (i in 1:length(unique(AllPage$Page))) {
         for (j in 2:ncol(ttestP)) {
+        # for (j in 2:5) {
                 z <- t.test(AllPage[which(AllPage$Test=="Test1" & AllPage$Page==i-1),colnames(ttestP)[j]],AllPage[which(AllPage$Test=="Test2" & AllPage$Page==i-1),colnames(ttestP)[j]])
                 ttestP[s,"Page"] <- AllPage$Page[i]
                 ttestP[s,colnames(ttestP)[j]] <- z$p.value
@@ -764,6 +781,9 @@ for (i in 1:1) {
         s <- s+1
 }
 write.csv(ttestT, file = "ttestT.csv")
+
+
+remove(fx,p,ps,temp,tempAOI,tempsAOI,x2,x3,xy,xyz,y,ys,z)
 
 # finding a text
 # strsplit(rownames(m2),"_")
