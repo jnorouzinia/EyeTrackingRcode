@@ -2,7 +2,7 @@
 # without removing communal fixation between two pages # with a second and calculated duration of events by timestamp
 # rm(list = ls(all.names = TRUE)) removing all variables
 
-setwd("~/Desktop/MSTBI/TobiiExtractedData/02-MSTBI05-RawData-csv")
+setwd("~/Desktop/MSTBI/TobiiExtractedData/02-MSTBI06-RawData-csv")
 library(stringr)
 library(dplyr)
 options(scipen = 999)
@@ -28,6 +28,7 @@ files_full <- list.files(getwd())
 #         a <- read.csv(files_full[i], header = FALSE)
 # }
 # names(a) <- c(list.files(getwd(), full.names = FALSE)[1])
+Sys.time()
 a <- lapply(files_full, read.csv)
 names(a) <- c(list.files(getwd(), full.names = FALSE))
 namesA <- names(a) #copy of names(a)
@@ -111,7 +112,7 @@ dcopy <- d
 d <- dcopy
 
 Sys.time()
-for (i in 1:length(d)) { # running for about 15 hours
+for (i in 1:length(d)) { # running for about 9 hours # should not be change to as.numeric(1), for page 1, for example?
 # for (i in 10:length(d)) {
         d[[i]][,"Page"] <- NA
         # browser()
@@ -164,60 +165,12 @@ Sys.time()
 dcopy1 <- d
 d <- dcopy1
 
-# e <- d
-# fx <- data.frame(fxr=0,t1=0,t2=0,FixInd=0
-#                  # , Time=0
-#                  )
-# Sys.time()
-# for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
-# # for (i in 1:1) { #length(g) is equal to number of participants
-#         p <- split(e[[i]], e[[i]]$Page)
-#         q <- as.numeric(levels(e[[i]]$Page))  # I could not select an element of a vector, so I converted it
-#         for (k in 1:length(q)) {
-#                 if (q[k]>=0) {
-#                         z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
-#                         z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
-#                         if (length(z1)>0) {
-#                                 for (m in 1:length(z1)) {
-#                                         fx$fxr <- fx$t1 <- fx$t2 <- fx$FixInd <- 0
-#                                         for (r in 1:nrow(p[[k]])){
-#                                                 fx$fxr <- r
-#                                                 if ((p[[k]][r, "FixationIndex"]== 0 & (p[[k]][r,z1[m]]) %in% 0)) {
-#                                                                 fx$t2 <- r
-#                                                 }
-#                                                 if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 0 & fx$FixInd > 0) {
-#                                                                 fx$FixInd <- 0
-#                                                 }
-#                                                 if ((p[[k]][r, "FixationIndex"])> 0 & (p[[k]][r,z1[m]]) %in% 1) {
-#                                                         if (fx$FixInd ==0) {
-#                                                                 fx$t1 <- r
-#                                                                 fx$FixInd <- p[[k]][r, "FixationIndex"]
-#                                                         } else if ((p[[k]][r, "FixationIndex"]-fx$FixInd)==0) {
-#                                                                 fx$t1 <- r
-#                                                         } else if ((p[[k]][r, "FixationIndex"]-fx$FixInd)==1) {
-#                                                                 for (s in (fx$t1+1):(fx$t2)) {
-#                                                                         e[[i]][which(e[[i]]$Page==q[k]),][s,z1[m]] <- 2
-#                                                                 }
-#                                                                 p[[k]][(fx$t1+1):(fx$t2), z1[m]] <- 2
-#                                                                 fx$t1 <- r
-#                                                                 fx$FixInd <- p[[k]][r, "FixationIndex"]
-#                                                         }
-#                                                 }
-#                                         }
-#                                 }
-#                         }
-#                 }
-#         }
-# }
-# ecopy <- e
-# e <- ecopy
-# Sys.time()
-
 # relabeling non-fixation gazes between each two consecutive fixation on the AOI as gazes belong to AOI (2 on the AOI column for these gazes)
 e <- d
 fx <- data.frame(t1=0,t2=0,FixInd=0)
 Sys.time()
 
+# run time: 40 min
 for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
         # for (i in 1:1) { #length(g) is equal to number of participants
         p <- split(e[[i]], e[[i]]$Page)
@@ -447,27 +400,18 @@ for (i in 1:length(g)) {
 }
 Sys.time()
 
-####
-# needed:  renaming AOIs
-####
+# reporting fixation-related variables for each AOI in each page
 for (i in 1:length(g)) {
-# for (i in 2:2) {
         s <- 1
-        print(i)
         for (j in 1:length(zz)) {
-                # print(zz[j])
                 # browser() #checking AOI.WholePage.Hit.2 on page 2
-                if (length(which(g[[i]][zz[j]]==0))>0) {
-                        
+                if (length(which(g[[i]][zz[j]]>=0))>0) {
                         if (length(which(g[[i]][zz[j]]==1))>0) {
                                 y <- g[[i]][which(g[[i]][zz[j]]==1),1:length(va)]
                                 o <- 0
-                                # browser()
                                 for (k in 3:length(y)) {
                                         # browser()
-                                        
                                         # below two lines may move out of the for loop # even page and AOI assignment may move out of if loop
-                                        gAOI[[i]][s,"Rec"] <- substr(names(g)[i],start=16, stop=21)
                                         gAOI[[i]][s,"Page"] <- y[1,"Page"]
                                         gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
                                         gAOI[[i]][s,k+1+o] <- mean(y[,k],na.rm = TRUE) #k+1: because the number of columns in gAOI is one more than g (added Rec)
@@ -487,7 +431,6 @@ for (i in 1:length(g)) {
                                 }
                         }
                 s <- s+1
-                # browser()
                 }
         }
 }
@@ -499,15 +442,7 @@ gAOI<- gAOIcopy
 AOI <- do.call(rbind,gAOI)
 rownames(AOI) <- c()
 
-
-# for (i in 1:length(a)) {
-#         print(names(a)[i])
-#         print(length(a[[i]]))
-# 
-# }
-
 write.csv(AOI, file = "AOI-Fix-report.csv")
-
 
 # Summarize the saccade data for each AOI
 zzs <- which(str_detect(names(gs[[1]]),"AOI"))
@@ -527,14 +462,10 @@ for (i in 1:length(gs)) {
         gsAOI[[i]] <- tempsAOI
 }
 
-####
-# needed:  renaming AOIs
-
-####
 for (i in 1:length(gs)) {
         s <- 1
         for (j in 1:length(zzs)) {
-                if (length(which(gs[[i]][zzs[j]]==1))>0) {
+                if (length(which(gs[[i]][zzs[j]]==1))>0) {  ### ==1 should be tested to see if it is correct
                         y <- gs[[i]][which(gs[[i]][zzs[j]]==1),1:length(vas)]
                         o <- 0
                         for (k in 3:length(y)) {
@@ -568,7 +499,7 @@ gsAOI<- gsAOIcopy
 #######
 library(dplyr)
 # FixPage and SacPage: matrix of means of columns (means of data of all fixations of each participant for each page)
-# summary of each paricipant
+# summary of each participant
 
 gPage <- list()
 gPage <- lapply(g, function(x) summarise(x %>% group_by(Page),
@@ -627,7 +558,7 @@ AllPage[,"Rec"] <- substr(AllPage$Participant,start=11, stop=12)
 AllPage <- AllPage[,c(31,32,33,1:30)]
 rownames(AllPage) <- c()
 # Removing second column of page number
-AllPage <- subset(AllPage, select = -c(Page.1) )
+AllPage <- subset(AllPage, select = -c(Page.1))
 
 
 AllPageCopy <- AllPage
@@ -785,6 +716,51 @@ write.csv(ttestT, file = "ttestT.csv")
 
 remove(fx,p,ps,temp,tempAOI,tempsAOI,x2,x3,xy,xyz,y,ys,z)
 
+# ttestT is cleaned outside of R, manually, and then re-imported here for additional analyses
+AOIreport <- read.csv("~/Desktop/MSTBI/TobiiExtractedData/AOI-Fix-cleaned.csv")
+
+AOIreport$Test <- as.character(AOIreport$Test)
+AOIreport$Rec <- as.character(AOIreport$Rec)
+AOIreport$AOI <- as.character(AOIreport$AOI)
+
+# AOISummary is the average of AOIreport values, shows the average of all participants' variables for each AOI, Page, Test
+AOISummary <- AOIreport
+AOISummary <- AOISummary[-c(1:nrow(AOISummary)),-c(2)]
+s <- 1
+for (i in 1:length(unique(AOIreport$AOI))) {
+        for (j in 1:length(unique(AOIreport$Test))) {
+                for (k in 1:length(unique(AOIreport$Page))) {
+                        AOISummary[s, "AOI"] <- unique(AOIreport$AOI)[i]
+                        AOISummary[s, "Test"] <- unique(AOIreport$Test)[j]
+                        AOISummary[s, "Page"] <- unique(AOIreport$Page)[k]
+                        z <- sapply(AOIreport[which(AOIreport$Test==unique(AOIreport$Test)[j] & AOIreport$AOI == unique(AOIreport$AOI)[i] & AOIreport$Page == unique(AOIreport$Page)[k]),5:18], function(x) mean(x, na.rm = TRUE))
+                        AOISummary[s,4: 17] <- z[1:14]
+                        s <- s+1
+                }
+        }
+}
+
+
+ttestAOI <- AOIreport
+ttestAOI <- ttestAOI[-c(2:nrow(ttestAOI)),-c(1:4,11:18)]
+ttestAOI[1,] <- NA
+
+s <- 1
+for (i in 1:length(unique(AOIreport$AOI))) {
+        for (j in 1:ncol(ttestAOI)) {
+                # z <- t.test(AllTotal[which(AllTotal$Test=="Test1"),colnames(ttestT)[j]],AllTotal[which(AllTotal$Test=="Test2"),colnames(ttestT)[j]])
+                z <- t.test(AOIreport[which(AOIreport$Test=="TopNav" & AOIreport$AOI=="NavBar"),colnames(ttestAOI)[j]],AOIreport[which(AOIreport$Test=="LeftNav" & AOIreport$AOI=="NavBar"),colnames(ttestAOI)[j]])
+                
+                ttestAOI[s,colnames(ttestAOI)[j]] <- z$p.value
+        }
+        s <- s+1
+}
+write.csv(ttestT, file = "ttestT.csv")
+
+# t.test(AOIreport[which(AOIreport$Test=="TopNav" & AOIreport$AOI=="NavBar"),"Fix_Dens_M"],AOIreport[which(AOIreport$Test=="LeftNav" & AOIreport$AOI=="NavBar"),"Fix_Dens_M"])
+# t.test(AOIreport[which(AOIreport$Test=="TopNav" & AOIreport$Page==1 & AOIreport$AOI=="NavBar"),"Fix_Dens_M"],AOIreport[which(AOIreport$Test=="LeftNav" & AOIreport$Page==1 & AOIreport$AOI=="NavBar"),"Fix_Dens_M"])
+
+
+
 # finding a text
 # strsplit(rownames(m2),"_")
-# substr(row.names(AllPage),start=1, stop=12)
