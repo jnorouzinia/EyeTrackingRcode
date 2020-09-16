@@ -34,6 +34,22 @@ names(a) <- c(list.files(getwd(), full.names = FALSE))
 namesA <- names(a) #copy of names(a)
 Sys.time()
 
+# ordering some of columns alphabetically, like below code, only moves the content of columns, not their names, which make a mess, shown in commented code below.
+# z <- a[[8]]
+# zcopy <- z
+# zz <- which(str_detect(names(z),"AOI"))
+# order(names(zz))
+# z[,zz] <- z[,zz[order(names(z[,zz]))]]
+# The solution is finding the order of indexes and enter all indexes for all columns, including what we do not want to move, with the desired order to the dataframe.
+for (i in 1: length(a)) {
+        z <- a[[i]]
+        zz <- which(str_detect(names(z),"AOI")) # finding Index of AOI columns
+        zz2 <- zz[order(names(z)[zz])] # these steps are kind of redundant and only is added for helping someone who read the code to understand how it works
+        zzz <- c(c(1:(zz[1]-1)),zz2,(zz[length(zz)]+1):length(z)) # addressing all columns including untouched columns in the begining, sorted AOI columns in the middle, and the end untouched columns.
+        z <- z[,zzz]
+        a[[i]] <- z
+}
+
 # plotting complete set of pupil size of a particpant
 # for (i in 1) {
 #         plot(a[[i]]$GazePointIndex, a[[i]]$PupilLeft)
@@ -113,14 +129,9 @@ d <- dcopy
 
 Sys.time()
 for (i in 1:length(d)) { # running for about 9 hours # should not be change to as.numeric(1), for page 1, for example?
-# for (i in 10:length(d)) {
         d[[i]][,"Page"] <- NA
-        # browser()
-        # levels(d[[i]][,"Page"]) <- c(-1:21)     # when reviewing the code, I never understood why I did not need this line for Test1 participants but Test2. Without this line, for Test2 participants, we only get page=-1 but the page for others would be NA.
-        # browser()
         d[[i]]$MediaName <- as.character(d[[i]]$MediaName) #converting factor to character to enable selecting one element
         for (j in 1:nrow(d[[i]])) {
-        # for (j in 1:5000) {
                 if ((d[[i]][j,"MediaName"])=="") {d[[i]][j,"Page"] <- as.character(-1) 
                 } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/") {d[[i]][j,"Page"] <- as.character(0)
                 } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/1" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/1") {d[[i]][j,"Page"] <- as.character(1)
@@ -230,22 +241,35 @@ for (i in 1:length(g)) {
         g[[i]] <- temp
 }
 
-for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min
-# for (i in 2:2) { 
+Sys.time()
+# for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min, i:25 min
+for (i in 1:1) {
         s <- 1          #counter for rows
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  #I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
-                        h <- as.character(unique(p[[k]]$IVTfac))  #p[[k]]$IVTfac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
+                # if (q[k]>=12) {
+                        # h <- as.character(unique(p[[k]]$IVTfac))  # p[[k]]$IVTfac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
+                        h <- as.numeric(unique(p[[k]]$IVTfac))-1 # p[[k]]$IVTfac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to numeric and subtracted 1, because with as.numeric, it was starting from 1 instead of 0.
+                        # browser()
                         for (j in 1:length(h)) {        #number of fixations for each participant      
                                 y <- p[[k]][which(p[[k]]$IVTfac==h[j]),]
+                                # if (q[k]>=1) {
+                                #         browser()
+                                # }
                                 if (h[j] > 0) {
                                         g[[i]][s,"Page"] <- q[k]
                                         z <- which(str_detect(names(y),"AOI")) 
-                                        z1 <- z[which(sapply(y[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI belongs to this page
+                                        z1 <- z[which(sapply(y[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI(s) belongs to this page
+                                        # if (y$FixationIndex==1146) {
+                                                browser()
+                                        # }
                                         for (m in 1:length(z)) {
                                                 if (z[m] %in% z1) { #condition to separate AOIs on/out of the page
+                                                        # print(s)
+                                                        # print(z[m])
+                                                        
                                                         if (sum(y[,z[m]],na.rm = TRUE)>0) { #condition to check AOI with value of 1 (>0): showing the fixation on the AOI
                                                                 g[[i]][s,length(va)+m] <- 1
                                                         } else if (sum(y[,z[m]],na.rm = TRUE)==0) { #condition to check AOI with value of 0: showing the fixation not on the AOI
@@ -319,7 +343,7 @@ for (i in 1:length(gs)) { #length(gs) is equal to number of participants # runni
         for (k in 1:length(qs)) {
                 # browser()
                 if (qs[k]>=0) {
-                        hs <- as.character(unique(ps[[k]]$IVTSacFac))  #ps[[k]]$IVTSacFac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
+                        hs <- as.numeric(unique(ps[[k]]$IVTSacFac))  #ps[[k]]$IVTSacFac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
                         for (j in 1:length(hs)) {        #number of fixations for each participant      
                                 ys <- ps[[k]][which(ps[[k]]$IVTSacFac==hs[j]),]
                                 if (hs[j] > 0) {
@@ -412,13 +436,16 @@ for (i in 1:length(g)) {
                                 for (k in 3:length(y)) {
                                         # browser()
                                         # below two lines may move out of the for loop # even page and AOI assignment may move out of if loop
+                                        gAOI[[i]][s,"Rec"] <- substr(names(g)[i],start=16, stop=21)
                                         gAOI[[i]][s,"Page"] <- y[1,"Page"]
                                         gAOI[[i]][s,"AOI"] <- names(g[[i]])[zz[j]]
                                         gAOI[[i]][s,k+1+o] <- mean(y[,k],na.rm = TRUE) #k+1: because the number of columns in gAOI is one more than g (added Rec)
                                         gAOI[[i]][s,k+1+o+1] <- sd(y[,k],na.rm = TRUE) #o & o+1: columns for mean & sd of each variable
                                         o <- o+1
                                 }
-                        } else {
+                                # s <- s+1
+                        } 
+                        else {
                                 y <- g[[i]][which(g[[i]][zz[j]]==0),1:length(va)]
                                 gAOI[[i]][s,"Rec"] <- substr(names(g)[i],start=16, stop=21)
                                 gAOI[[i]][s,"Page"] <- y[1,"Page"]
@@ -441,6 +468,8 @@ gAOI<- gAOIcopy
 # test should be added. renaming AOIs should be done.
 AOI <- do.call(rbind,gAOI)
 rownames(AOI) <- c()
+AOIcopy <- AOI
+AOI <- AOIcopy
 
 write.csv(AOI, file = "AOI-Fix-report.csv")
 
@@ -470,13 +499,17 @@ for (i in 1:length(gs)) {
                         o <- 0
                         for (k in 3:length(y)) {
                                 # browser()
+                                gsAOI[[i]][s,"Rec"] <- substr(names(gs)[i],start=16, stop=21)
                                 gsAOI[[i]][s,"Page"] <- y[1,"Page"]
                                 gsAOI[[i]][s,"AOI"] <- names(gs[[i]])[zzs[j]]
                                 gsAOI[[i]][s,k+1+o] <- mean(y[,k],na.rm = TRUE)
                                 gsAOI[[i]][s,k+1+o+1] <- sd(y[,k],na.rm = TRUE)
+                                gsAOI[[i]][s,"Sac_Dens_SD"] <- NA #overriding the Sac_Dens_SD calculations because this is meaningless, but to keep same structure of fixation and saccade outputs, we kept this column
                                 o <- o+1
                         }
-                } else {
+                        # s <- s+1
+                } 
+                else {
                         gsAOI[[i]][s,"Page"] <- y[1,"Page"]
                         gsAOI[[i]][s,"AOI"] <- names(gs[[i]])[zzs[j]]
                         o <- 0
@@ -486,7 +519,6 @@ for (i in 1:length(gs)) {
                                 o <- o+1
                         }
                 }
-                gsAOI[[i]][s,"Sac_Dens_SD"] <- NA #overriding the Sac_Dens_SD calculations because this is meaningless, but to keep same structure of fixation and saccade outputs, we kept this column
                 s <- s+1
                 # browser()
         }
@@ -730,21 +762,25 @@ s <- 1
 for (i in 1:length(unique(AOIreport$AOI))) {
         for (j in 1:length(unique(AOIreport$Test))) {
                 for (k in 1:length(unique(AOIreport$Page))) {
-                        AOISummary[s, "AOI"] <- unique(AOIreport$AOI)[i]
-                        AOISummary[s, "Test"] <- unique(AOIreport$Test)[j]
-                        AOISummary[s, "Page"] <- unique(AOIreport$Page)[k]
+                        # browser()
                         z <- sapply(AOIreport[which(AOIreport$Test==unique(AOIreport$Test)[j] & AOIreport$AOI == unique(AOIreport$AOI)[i] & AOIreport$Page == unique(AOIreport$Page)[k]),5:18], function(x) mean(x, na.rm = TRUE))
-                        AOISummary[s,4: 17] <- z[1:14]
-                        s <- s+1
+                        if (mean(is.na(z)) < 1) {
+                                AOISummary[s, "AOI"] <- unique(AOIreport$AOI)[i]
+                                AOISummary[s, "Test"] <- unique(AOIreport$Test)[j]
+                                AOISummary[s, "Page"] <- unique(AOIreport$Page)[k]
+                                AOISummary[s,4: 17] <- z[1:14]
+                                s <- s+1
+                        }
                 }
         }
 }
-
+AOISummaryCopy <- AOISummary
+AOISummary  <- AOISummaryCopy
+write.csv(AOISummary, "AOISummary.csv")
 
 ttestAOI <- AOIreport
 ttestAOI <- ttestAOI[-c(2:nrow(ttestAOI)),-c(1:4,11:18)]
 ttestAOI[1,] <- NA
-
 s <- 1
 for (i in 1:length(unique(AOIreport$AOI))) {
         for (j in 1:ncol(ttestAOI)) {
@@ -764,3 +800,70 @@ write.csv(ttestT, file = "ttestT.csv")
 
 # finding a text
 # strsplit(rownames(m2),"_")
+
+
+summary(d[[8]][which(d[[8]]$Page==12),"AOI.Pg12.Grid.Hit"])
+summary(g[[8]][which(g[[8]]$Page==12),"AOI.Pg12.Grid.Hit"])
+
+
+############
+
+
+# reordering code once we found the order issue but had run the code, and needed to reorder each variable one-by-one. Then after reordering a in the beginning, everything after that should be in order.
+# for (i in 1: length(b)) {
+#         # for (i in 1: 1) {
+#         z <- b[[i]]
+#         zz <- which(str_detect(names(z),"AOI")) # finding Index of AOI columns
+#         # order(names(z)[zz])
+#         zz2 <- zz[order(names(z)[zz])] # these steps are kind of redundant and only is added for helping someone who read the code to understand how it works
+#         zzz <- c(c(1:(zz[1]-1)),zz2) # addressing all columns including untouched columns in the begining, sorted AOI columns in the middle, and the end untouched columns.
+#         z <- z[,zzz]
+#         b[[i]] <- z
+# }
+# 
+# for (i in 1: length(c)) {
+#         # for (i in 1: 1) {
+#         z <- c[[i]]
+#         zz <- which(str_detect(names(z),"AOI")) # finding Index of AOI columns
+#         # order(names(z)[zz])
+#         zz2 <- zz[order(names(z)[zz])] # these steps are kind of redundant and only is added for helping someone who read the code to understand how it works
+#         zzz <- c(c(1:(zz[1]-1)),zz2,(zz[length(zz)]+1):length(z)) # addressing all columns including untouched columns in the begining, sorted AOI columns in the middle, and the end untouched columns.
+#         z <- z[,zzz]
+#         c[[i]] <- z
+# }
+# 
+# for (i in 1: length(d)) {
+#         # for (i in 1: 1) {
+#         z <- d[[i]]
+#         zz <- which(str_detect(names(z),"AOI")) # finding Index of AOI columns
+#         # order(names(z)[zz])
+#         zz2 <- zz[order(names(z)[zz])] # these steps are kind of redundant and only is added for helping someone who read the code to understand how it works
+#         zzz <- c(c(1:(zz[1]-1)),zz2,(zz[length(zz)]+1):length(z)) # addressing all columns including untouched columns in the begining, sorted AOI columns in the middle, and the end untouched columns.
+#         z <- z[,zzz]
+#         d[[i]] <- z
+# }
+# 
+# for (i in 1: length(e)) {
+#         # for (i in 1: 1) {
+#         z <- e[[i]]
+#         zz <- which(str_detect(names(z),"AOI")) # finding Index of AOI columns
+#         # order(names(z)[zz])
+#         zz2 <- zz[order(names(z)[zz])] # these steps are kind of redundant and only is added for helping someone who read the code to understand how it works
+#         zzz <- c(c(1:(zz[1]-1)),zz2,(zz[length(zz)]+1):length(z)) # addressing all columns including untouched columns in the begining, sorted AOI columns in the middle, and the end untouched columns.
+#         z <- z[,zzz]
+#         e[[i]] <- z
+# }
+
+
+
+# zz3 <- a[[1]][,1:5]
+# zz3copy <- zz3
+# zz3 <- zz3copy
+# 
+# order(names(zz3)[4:5])
+# c(4:5)[order(names(zz3)[4:5])]
+# zz3 <- zz3[,c(1:3,c(4:5)[order(names(zz3)[4:5])])]
+# 
+# zz3[,4:5] <- zz3[,4:5][order(names(zz3)[4:5])]
+# zz[zzz[1]:zzz[length(zzz)]] <- zz[zzz[1]:zzz[length(zzz)]][order(names(zz[zzz[1]:zzz[length(zzz)]]))]
+############
