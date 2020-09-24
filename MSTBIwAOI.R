@@ -10,6 +10,14 @@ options(scipen = 999)
 #list files
 files_full <- list.files(getwd())
 
+# z <- 0
+# for (i in 1:length(d)) {
+#         print(i)
+#         print(nrow(d[[i]]))
+#         print(length(d[[i]]))
+#         z <- z + nrow(d[[i]])
+# }
+
 # relabeling part of fixations without x,y as Fi
 # for (i in 1:length(files_full)) {
 # # for (i in 1:2) {
@@ -129,32 +137,34 @@ d <- dcopy
 
 Sys.time()
 for (i in 1:length(d)) { # running for about 9 hours # should not be change to as.numeric(1), for page 1, for example?
+# for (i in 1:1) { # running for about 9 hours # should not be change to as.numeric(1), for page 1, for example?
         d[[i]][,"Page"] <- NA
         d[[i]]$MediaName <- as.character(d[[i]]$MediaName) #converting factor to character to enable selecting one element
         for (j in 1:nrow(d[[i]])) {
-                if ((d[[i]][j,"MediaName"])=="") {d[[i]][j,"Page"] <- as.character(-1) 
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/") {d[[i]][j,"Page"] <- as.character(0)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/1" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/1") {d[[i]][j,"Page"] <- as.character(1)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/2" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/2") {d[[i]][j,"Page"] <- as.character(2)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/3" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/3") {d[[i]][j,"Page"] <- as.character(3)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/4" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/4") {d[[i]][j,"Page"] <- as.character(4)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/5" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/5") {d[[i]][j,"Page"] <- as.character(5)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/6" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/6") {d[[i]][j,"Page"] <- as.character(6)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/7" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/7") {d[[i]][j,"Page"] <- as.character(7)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/8" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/8") {d[[i]][j,"Page"] <- as.character(8)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/9" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/9") {d[[i]][j,"Page"] <- as.character(9)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/10" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/10") {d[[i]][j,"Page"] <- as.character(10)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/11" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/11") {d[[i]][j,"Page"] <- as.character(11)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/12" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/12") {d[[i]][j,"Page"] <- as.character(12)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/13" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/13") {d[[i]][j,"Page"] <- as.character(13)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/14" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/14") {d[[i]][j,"Page"] <- as.character(14)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/15" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/15") {d[[i]][j,"Page"] <- as.character(15)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/16" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/16") {d[[i]][j,"Page"] <- as.character(16)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/17" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/17") {d[[i]][j,"Page"] <- as.character(17)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/18" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/18") {d[[i]][j,"Page"] <- as.character(18)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/report" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/report") {d[[i]][j,"Page"] <- as.character(19)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/summary" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/summary") {d[[i]][j,"Page"] <- as.character(20)
-                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/sus" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/sus") {d[[i]][j,"Page"] <- as.character(21)
+        # for (j in 1:10000) {
+                if ((d[[i]][j,"MediaName"])=="") {d[[i]][j,"Page"] <- as.numeric(-1) 
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/") {d[[i]][j,"Page"] <- as.numeric(0)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/1" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/1") {d[[i]][j,"Page"] <- as.numeric(1)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/2" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/2") {d[[i]][j,"Page"] <- as.numeric(2)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/3" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/3") {d[[i]][j,"Page"] <- as.numeric(3)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/4" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/4") {d[[i]][j,"Page"] <- as.numeric(4)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/5" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/5") {d[[i]][j,"Page"] <- as.numeric(5)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/6" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/6") {d[[i]][j,"Page"] <- as.numeric(6)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/7" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/7") {d[[i]][j,"Page"] <- as.numeric(7)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/8" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/8") {d[[i]][j,"Page"] <- as.numeric(8)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/9" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/9") {d[[i]][j,"Page"] <- as.numeric(9)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/10" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/10") {d[[i]][j,"Page"] <- as.numeric(10)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/11" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/11") {d[[i]][j,"Page"] <- as.numeric(11)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/12" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/12") {d[[i]][j,"Page"] <- as.numeric(12)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/13" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/13") {d[[i]][j,"Page"] <- as.numeric(13)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/14" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/14") {d[[i]][j,"Page"] <- as.numeric(14)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/15" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/15") {d[[i]][j,"Page"] <- as.numeric(15)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/16" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/16") {d[[i]][j,"Page"] <- as.numeric(16)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/17" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/17") {d[[i]][j,"Page"] <- as.numeric(17)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/18" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/18") {d[[i]][j,"Page"] <- as.numeric(18)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/report" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/report") {d[[i]][j,"Page"] <- as.numeric(19)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/summary" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/summary") {d[[i]][j,"Page"] <- as.numeric(20)
+                } else if (d[[i]][j,"MediaName"] == "http://mis573server.wpi.edu/sus" | d[[i]][j,"MediaName"] == "http://tbidecisionaid.wpi.edu/sus") {d[[i]][j,"Page"] <- as.numeric(21)
                 }
                 if (j>1) {
                         d[[i]][j,"PD"] <- ((d[[i]][j,"AvePupil"])-(d[[i]][j-1,"AvePupil"]))
@@ -183,33 +193,67 @@ Sys.time()
 
 # run time: 40 min
 for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
-        # for (i in 1:1) { #length(g) is equal to number of participants
+# for (i in 8:8) { #length(g) is equal to number of participants
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  # I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
+                        # print("page=")
+                        # print(q[k])
                         z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
                         z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
                         if (length(z1)>0) {
                                 for (m in 1:length(z1)) { # go column by column of AOIs
                                         fx$t1 <- fx$t2 <- fx$FixInd <- 0
                                         x <- unique(p[[k]]$FixationIndex)[unique(p[[k]]$FixationIndex)>0] # x: fixations
+                                        # if (q[k]>4) {
+                                        #         browser()  
+                                        # }
                                         for  (r in 1:length(x)) {
                                                 xy <- p[[k]][which(p[[k]]$FixationIndex==x[r]),]
-                                                if (xy[2,z1[m]] %in% 1) {           # the first row of each fixation might be NA, so looked at the second row
-                                                
-                                                        if (fx$FixInd ==0) {
-                                                                fx$FixInd <- xy[1,"FixationIndex"] 
-                                                                fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
-                                                        } else {
+######
+                                                # if (xy[2,z1[m]] %in% 1) {           # the first row of each fixation might be NA, so looked at the second row
+                                                #         if (fx$FixInd ==0) {  # the previous fixation did not take place on the AOI
+                                                #                 fx$FixInd <- xy[1,"FixationIndex"] 
+                                                #                 fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
+                                                #         } else if (fx$FixInd > 0 & xy[1,"FixationIndex"]-fx$FixInd==1 ){
+                                                #                 fx$t2 <- xy[1,"RecordingTimestamp"]     #timestamp of first row of second consecutive fixation on the AOI
+                                                #                 e[[i]][which(e[[i]]["RecordingTimestamp"] > fx$t1 & e[[i]]["RecordingTimestamp"] < fx$t2),z1[m]] <- 2
+                                                #                 fx$FixInd <- xy[1,"FixationIndex"] 
+                                                #                 fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]
+                                                #                 # browser()
+                                                #                 print("done")
+                                                #                 print(z1[m])
+                                                #                 print(xy$FixationIndex)
+                                                #         }
+                                                # } else if (xy[2,z1[m]] %in% 0 & fx$FixInd>0) { # previously we have found a fixation on the AOI, but it has not the last one, but before that. So, we reset the counter
+                                                #         fx$FixInd <- 0
+                                                # }
+######
+                                                if (fx$FixInd > 0) {
+                                                        if (xy[2,z1[m]] %in% 0 | xy[1,"FixationIndex"]-fx$FixInd > 1) {  # previously we have found a fixation on the AOI, but it has not the last one, but before that. So, we reset the counter
+                                                                fx$FixInd <- 0
+                                                        } else if (xy[1,"FixationIndex"]-fx$FixInd == 1) {
                                                                 fx$t2 <- xy[1,"RecordingTimestamp"]     #timestamp of first row of second consecutive fixation on the AOI
                                                                 e[[i]][which(e[[i]]["RecordingTimestamp"] > fx$t1 & e[[i]]["RecordingTimestamp"] < fx$t2),z1[m]] <- 2
                                                                 fx$FixInd <- xy[1,"FixationIndex"] 
-                                                                fx$t1 <- xy[nrow(xy),"RecordingTimestamp"] 
+                                                                fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]
+                                                                # browser()
+                                                                # print("done")
+                                                                # print(z1[m])
+                                                                # print(xy$FixationIndex)
                                                         }
-                                                } else if (xy[2,z1[m]] %in% 0 & fx$FixInd>0) {
-                                                        fx$FixInd <- 0
-                                                }
+                                                } else if (fx$FixInd ==0 & xy[2,z1[m]] %in% 1) { # the first row of each fixation might be NA, so looked at the second row # the previous fixation did not take place on the AOI
+                                                        fx$FixInd <- xy[1,"FixationIndex"] 
+                                                        fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
+                                                }              
+                                                
+
+#########
+                                                
+                                                
+                                                
+                                                
                                         }
                                 }
                         }
@@ -242,14 +286,13 @@ for (i in 1:length(g)) {
 }
 
 Sys.time()
-# for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min, i:25 min
-for (i in 1:1) {
+for (i in 1:length(g)) { #length(g) is equal to number of participants #running time:20 min, i:25 min
+# for (i in 1:1) {
         s <- 1          #counter for rows
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  #I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
-                # if (q[k]>=12) {
                         # h <- as.character(unique(p[[k]]$IVTfac))  # p[[k]]$IVTfac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to character, because with as.numeric, for some reasons, it was starting from 1 instead of 0.
                         h <- as.numeric(unique(p[[k]]$IVTfac))-1 # p[[k]]$IVTfac provides levels that probably assigned in previous part of the code. So, I used uniques of the page and converted to numeric and subtracted 1, because with as.numeric, it was starting from 1 instead of 0.
                         # browser()
@@ -263,13 +306,10 @@ for (i in 1:1) {
                                         z <- which(str_detect(names(y),"AOI")) 
                                         z1 <- z[which(sapply(y[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI(s) belongs to this page
                                         # if (y$FixationIndex==1146) {
-                                                browser()
+                                                # browser()
                                         # }
                                         for (m in 1:length(z)) {
                                                 if (z[m] %in% z1) { #condition to separate AOIs on/out of the page
-                                                        # print(s)
-                                                        # print(z[m])
-                                                        
                                                         if (sum(y[,z[m]],na.rm = TRUE)>0) { #condition to check AOI with value of 1 (>0): showing the fixation on the AOI
                                                                 g[[i]][s,length(va)+m] <- 1
                                                         } else if (sum(y[,z[m]],na.rm = TRUE)==0) { #condition to check AOI with value of 0: showing the fixation not on the AOI
@@ -351,13 +391,6 @@ for (i in 1:length(gs)) { #length(gs) is equal to number of participants # runni
                                         z <- which(str_detect(names(ys),"AOI")) 
                                         # z1 <- z[which(sapply(ys[,z], function(x) sum(x,na.rm = TRUE))>0)]
                                         z1 <- z[which(sapply(ys[,z], function(x) length(which(!is.na(x))))>0)] # finding which columns has non-NA values: showing the AOI belongs to this page
-                                        # for (m in 1:length(z)) {
-                                        #         if (z[m] %in% z1) {
-                                        #                 gs[[i]][s,length(vas)+m] <- 1      
-                                        #         } else {
-                                        #                 gs[[i]][s,length(vas)+m] <- 0
-                                        #         }
-                                        # }
                                         for (m in 1:length(z)) {
                                                 if (z[m] %in% z1) { #condition to separate AOIs on/out of the page
                                                         if (sum(ys[,z[m]],na.rm = TRUE)>0) { #condition to check AOI with value of 1 (>0): showing the saccade on the AOI
@@ -443,7 +476,6 @@ for (i in 1:length(g)) {
                                         gAOI[[i]][s,k+1+o+1] <- sd(y[,k],na.rm = TRUE) #o & o+1: columns for mean & sd of each variable
                                         o <- o+1
                                 }
-                                # s <- s+1
                         } 
                         else {
                                 y <- g[[i]][which(g[[i]][zz[j]]==0),1:length(va)]
@@ -745,7 +777,6 @@ for (i in 1:1) {
 }
 write.csv(ttestT, file = "ttestT.csv")
 
-
 remove(fx,p,ps,temp,tempAOI,tempsAOI,x2,x3,xy,xyz,y,ys,z)
 
 # ttestT is cleaned outside of R, manually, and then re-imported here for additional analyses
@@ -755,25 +786,33 @@ AOIreport$Test <- as.character(AOIreport$Test)
 AOIreport$Rec <- as.character(AOIreport$Rec)
 AOIreport$AOI <- as.character(AOIreport$AOI)
 
+##########
+# Page.w.o.Nav were replaced to Page.w.o.NavBar manually, in the cleaned file, which should be done in the beginning of ther code
 # AOISummary is the average of AOIreport values, shows the average of all participants' variables for each AOI, Page, Test
 AOISummary <- AOIreport
-AOISummary <- AOISummary[-c(1:nrow(AOISummary)),-c(2)]
+AOISummary <- AOISummary[-c(1:nrow(AOISummary)),-c(1)]
 s <- 1
+# for (i in 1:length(unique(AOIreport$AOI))) {
 for (i in 1:length(unique(AOIreport$AOI))) {
         for (j in 1:length(unique(AOIreport$Test))) {
                 for (k in 1:length(unique(AOIreport$Page))) {
-                        # browser()
                         z <- sapply(AOIreport[which(AOIreport$Test==unique(AOIreport$Test)[j] & AOIreport$AOI == unique(AOIreport$AOI)[i] & AOIreport$Page == unique(AOIreport$Page)[k]),5:18], function(x) mean(x, na.rm = TRUE))
+                        # if (AOIreport$AOI=="Page.w.o.NavBar" & AOIreport$Page==c(7,9) & AOIreport$Test=="LeftNav") {
+                                # browser()
+                        # }
+                        AOISummary[s, "Test"] <- unique(AOIreport$Test)[j]
+                        AOISummary[s, "Page"] <- unique(AOIreport$Page)[k]
+                        AOISummary[s, "AOI"] <- unique(AOIreport$AOI)[i]
                         if (mean(is.na(z)) < 1) {
-                                AOISummary[s, "AOI"] <- unique(AOIreport$AOI)[i]
-                                AOISummary[s, "Test"] <- unique(AOIreport$Test)[j]
-                                AOISummary[s, "Page"] <- unique(AOIreport$Page)[k]
                                 AOISummary[s,4: 17] <- z[1:14]
-                                s <- s+1
+                        } else if (mean(is.na(z)) == 1) {
+                                AOISummary[s,4: 17] <- NA
                         }
+                        s <- s+1
                 }
         }
 }
+
 AOISummaryCopy <- AOISummary
 AOISummary  <- AOISummaryCopy
 write.csv(AOISummary, "AOISummary.csv")
@@ -854,16 +893,7 @@ summary(g[[8]][which(g[[8]]$Page==12),"AOI.Pg12.Grid.Hit"])
 #         e[[i]] <- z
 # }
 
+View(g[[8]][which(g[[8]]$fix ==348),])
+View(d[[8]][which(d[[8]]$MediaName =="http://tbidecisionaid.wpi.edu/3" | d[[8]]$MediaName =="http://tbidecisionaid.wpi.edu/4"),])
 
 
-# zz3 <- a[[1]][,1:5]
-# zz3copy <- zz3
-# zz3 <- zz3copy
-# 
-# order(names(zz3)[4:5])
-# c(4:5)[order(names(zz3)[4:5])]
-# zz3 <- zz3[,c(1:3,c(4:5)[order(names(zz3)[4:5])])]
-# 
-# zz3[,4:5] <- zz3[,4:5][order(names(zz3)[4:5])]
-# zz[zzz[1]:zzz[length(zzz)]] <- zz[zzz[1]:zzz[length(zzz)]][order(names(zz[zzz[1]:zzz[length(zzz)]]))]
-############
