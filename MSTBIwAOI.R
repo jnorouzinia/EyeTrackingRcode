@@ -188,22 +188,31 @@ d <- dcopy1
 
 # relabeling non-fixation gazes between each two consecutive fixation on the AOI as gazes belong to AOI (2 on the AOI column for these gazes)
 e <- d
+
+e[[8]] <- read.csv("~/Desktop/MSTBI/TobiiExtractedData/GitRstudioRepo/EyeTrackingRcode/DsampleCaseForE.csv")
+# "~/Desktop/MSTBI/TobiiExtractedData/GitRstudioRepo/EyeTrackingRcode/DsampleCaseForE.csv"
+e[[8]]$Page <- as.factor(e[[8]]$Page)
+
 fx <- data.frame(t1=0,t2=0,FixInd=0)
 Sys.time()
 
 # run time: 40 min
-for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
-# for (i in 8:8) { #length(g) is equal to number of participants
+# for (i in 1:length(e)) { #length(g) is equal to number of participants # terribly long running: 20 hours for about 1/4 of columns
+for (i in 8:8) { #length(g) is equal to number of participants
         p <- split(e[[i]], e[[i]]$Page)
         q <- as.numeric(levels(e[[i]]$Page))  # I could not select an element of a vector, so I converted it
         for (k in 1:length(q)) {
                 if (q[k]>=0) {
                         # print("page=")
                         # print(q[k])
+                        # browser()
                         z <- which(str_detect(names(p[[k]]),"AOI")) # finding AOI columns
-                        z1 <- z[which(sapply(p[[k]][,z], function(x) sum(x,na.rm = TRUE))>0)] # finding AOI columns of current page
+                        z1 <- z[which(sapply(p[[k]][,z], function(x) length(which(!is.na(x))))>0)] # finding AOI columns of current page
                         if (length(z1)>0) {
                                 for (m in 1:length(z1)) { # go column by column of AOIs
+                                        # if (z1[m] == 65) {
+                                        #         browser()
+                                        # }
                                         fx$t1 <- fx$t2 <- fx$FixInd <- 0
                                         x <- unique(p[[k]]$FixationIndex)[unique(p[[k]]$FixationIndex)>0] # x: fixations
                                         # if (q[k]>4) {
@@ -211,6 +220,10 @@ for (i in 1:length(e)) { #length(g) is equal to number of participants # terribl
                                         # }
                                         for  (r in 1:length(x)) {
                                                 xy <- p[[k]][which(p[[k]]$FixationIndex==x[r]),]
+                                                # if (z1[m] == 76) {
+                                                #         browser()
+                                                # }
+                                                
 ######
                                                 # if (xy[2,z1[m]] %in% 1) {           # the first row of each fixation might be NA, so looked at the second row
                                                 #         if (fx$FixInd ==0) {  # the previous fixation did not take place on the AOI
@@ -231,29 +244,27 @@ for (i in 1:length(e)) { #length(g) is equal to number of participants # terribl
                                                 # }
 ######
                                                 if (fx$FixInd > 0) {
-                                                        if (xy[2,z1[m]] %in% 0 | xy[1,"FixationIndex"]-fx$FixInd > 1) {  # previously we have found a fixation on the AOI, but it has not the last one, but before that. So, we reset the counter
+                                                        if (xy[2,z1[m]] %in% 0) {  # previously we have found a fixation on the AOI, but it has not the last one, but before that. So, we reset the counter
                                                                 fx$FixInd <- 0
+                                                        } else if (xy[2,z1[m]] %in% 1 & xy[1,"FixationIndex"]-fx$FixInd > 1) {
+                                                                fx$FixInd <- xy[1,"FixationIndex"]
+                                                                fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
+                                                                
                                                         } else if (xy[1,"FixationIndex"]-fx$FixInd == 1) {
                                                                 fx$t2 <- xy[1,"RecordingTimestamp"]     #timestamp of first row of second consecutive fixation on the AOI
                                                                 e[[i]][which(e[[i]]["RecordingTimestamp"] > fx$t1 & e[[i]]["RecordingTimestamp"] < fx$t2),z1[m]] <- 2
                                                                 fx$FixInd <- xy[1,"FixationIndex"] 
                                                                 fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]
+                                                                print("change")
                                                                 # browser()
                                                                 # print("done")
-                                                                # print(z1[m])
-                                                                # print(xy$FixationIndex)
+                                                                print(z1[m])
+                                                                print(xy$FixationIndex)
                                                         }
                                                 } else if (fx$FixInd ==0 & xy[2,z1[m]] %in% 1) { # the first row of each fixation might be NA, so looked at the second row # the previous fixation did not take place on the AOI
                                                         fx$FixInd <- xy[1,"FixationIndex"] 
                                                         fx$t1 <- xy[nrow(xy),"RecordingTimestamp"]      #timestamp of last row of the fixation on the AOI (to see if the next fixation would be still on the AOI)
                                                 }              
-                                                
-
-#########
-                                                
-                                                
-                                                
-                                                
                                         }
                                 }
                         }
